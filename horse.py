@@ -4,35 +4,62 @@ from PIL import Image
 import pygame
 
 
-screenpanels_width =  8 
-screenpanels_height =  2 
+screenpanels_width =  8
+screenpanels_height =  2
 screenpanel_pixels = 64
 screenwidth = screenpanel_pixels * screenpanels_width
 screenheight = screenpanel_pixels * screenpanels_height
+horseheight = 20
+horsewidth = 32
 
-horsepos = screenwidth - 32
-horseheight = 32
+
+
+screen = Image.new('RGB', (screenwidth,screenheight))
+
+
+grass = Image.open("grass.png")
+horse = Image.open("horse.png")
+
+
+
 #
 #   create a sprite class for each horse
-#
-
+#horse
 class Horse:
     def __init__(self, slotnumber):
-        self.x = horsepos
+        self.x = screenwidth - horsewidth
         self.y = horseheight * slotnumber
-        self.feet =  0
-        #self.
-
-
+        self.feet = 0
+    def draw(self):
+        screen.paste(horse, (self.x, self.y), horse)
+    def button(self, paw):
+        if self.feet == 0:
+            if paw == 0:
+              self.x=self.x-horsewidth//2
+              self.feet=1
+        if self.feet == 1:
+             if paw == 1:
+               self.x=self.x-horsewidth//2
+               self.feet=0
 # init
 # draw
 # button
+
+horses = []
+horses.append(Horse(0))
+horses.append(Horse(1))
+horses.append(Horse(2))
+horses.append(Horse(3))
 
 
 #
 #  create a horse track (background)
 #
-
+def drawGame():
+    screen.paste(grass)
+    for horse in horses:
+        horse.draw()
+    return screen
 
 #
 #  main loop
@@ -44,25 +71,11 @@ class Horse:
 #  - swap the buffers
 # -- if RGB Matrix - we will draw there, otherwise use pygame
 
- 
-grass = Image.open("grass.png")
-mode = grass.mode
-size = grass.size
-data = grass.tobytes()
-grass_image = pygame.image.fromstring(data, size, mode)
-
-image = Image.open("horse.png")
-mode = image.mode
-size = image.size
-data = image.tobytes()
-
-this_image = pygame.image.fromstring(data, size, mode)
-
 #this_image = pygame.image.load("animated-horse-gif-11.gif").convert()
 
 
 pygame.init()
-screen = pygame.display.set_mode((screenwidth, screenheight))
+screen_pygame = pygame.display.set_mode((screenwidth, screenheight))
 done = False
 
 while not done:
@@ -70,10 +83,28 @@ while not done:
                 if event.type == pygame.QUIT:
                         done = True
                 if event.type == pygame.KEYDOWN:
-                     if event.key == pygame.K_LEFT:
-                        horsepos-=32
+                     if event.key == pygame.K_1:
+                        horses[0].button(0)
+                     if event.key == pygame.K_2:
+                        horses[0].button(1)
+                     if event.key == pygame.K_q:
+                        horses[1].button(0)
+                     if event.key == pygame.K_w:
+                        horses[1].button(1)
+                     if event.key == pygame.K_a:
+                        horses[2].button(0)
+                     if event.key == pygame.K_s:
+                        horses[2].button(1)
+                     if event.key == pygame.K_z:
+                        horses[3].button(0)
+                     if event.key == pygame.K_x:
+                        horses[3].button(1)
 
         #pygame.draw.rect(screen, (0,100,0),(0,0,screenwidth,screenheight),0)
-        screen.blit(grass_image,(0,0))
-        screen.blit(this_image,(horsepos,0))
+        screen = drawGame()
+        mode = screen.mode
+        size = screen.size
+        data = screen.tobytes()
+        screen_image = pygame.image.fromstring(data, size, mode)
+        screen_pygame.blit(screen_image,(0,0))
         pygame.display.flip()
