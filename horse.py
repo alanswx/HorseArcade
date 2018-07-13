@@ -11,7 +11,8 @@ screenwidth = screenpanel_pixels * screenpanels_width
 screenheight = screenpanel_pixels * screenpanels_height
 horseheight = 20
 horsewidth = 32
-
+finishlinex = 40
+finish = False
 
 
 screen = Image.new('RGB', (screenwidth,screenheight))
@@ -33,14 +34,17 @@ class Horse:
     def draw(self):
         screen.paste(horse, (self.x, self.y), horse)
     def button(self, paw):
-        if self.feet == 0:
-            if paw == 0:
-              self.x=self.x-horsewidth//2
-              self.feet=1
-        if self.feet == 1:
-             if paw == 1:
+        if self.x > finishlinex:
+            if self.feet == 0:
+              if paw == 0:
+               self.x=self.x-horsewidth//2
+               self.feet=1
+            if self.feet == 1:
+              if paw == 1:
                self.x=self.x-horsewidth//2
                self.feet=0
+        else:
+          finish = True
 # init
 # draw
 # button
