@@ -3,6 +3,8 @@
 from PIL import Image
 import pygame
 
+import AnimatedSprite
+
 
 screenpanels_width =  8
 screenpanels_height =  2
@@ -28,11 +30,13 @@ horse = Image.open("horse.png")
 #horse
 class Horse:
     def __init__(self, slotnumber):
+        self.sprite=AnimatedSprite.AnimatedSprite('images/horse_0/horse_'+str(0),12)
         self.x = screenwidth - horsewidth
         self.y = horseheight * slotnumber
         self.feet = 0
-    def draw(self):
-        screen.paste(horse, (self.x, self.y), horse)
+    def draw(self,dt):
+        self.sprite.update(dt,screen,self.x,self.y)
+        #screen.paste(horse, (self.x, self.y), horse)
     def button(self, paw):
         if self.x > finishlinex:
             if self.feet == 0:
@@ -59,10 +63,10 @@ horses.append(Horse(3))
 #
 #  create a horse track (background)
 #
-def drawGame():
+def drawGame(dt):
     screen.paste(grass)
     for horse in horses:
-        horse.draw()
+        horse.draw(dt)
     return screen
 
 #
@@ -77,6 +81,8 @@ def drawGame():
 
 #this_image = pygame.image.load("animated-horse-gif-11.gif").convert()
 
+FPS = 60
+clock = pygame.time.Clock()
 
 pygame.init()
 screen_pygame = pygame.display.set_mode((screenwidth * 2, screenheight * 2), 0, 24)
@@ -84,6 +90,8 @@ screen_2x = pygame.Surface((screenwidth*2,screenheight*2), 0 , 24)
 done = False
 
 while not done:
+        dt = clock.tick(FPS) / 1000  # Amount of seconds between each loop.
+
         for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                         done = True
@@ -106,7 +114,7 @@ while not done:
                         horses[3].button(1)
 
         #pygame.draw.rect(screen, (0,100,0),(0,0,screenwidth,screenheight),0)
-        screen = drawGame()
+        screen = drawGame(dt)
         mode = screen.mode
         size = screen.size
         data = screen.tobytes()
