@@ -37,11 +37,11 @@ class Horse:
         if self.x > finishlinex:
             if self.feet == 0:
               if paw == 0:
-               self.x=self.x-horsewidth//2
+               self.x=self.x-horsewidth//4
                self.feet=1
             if self.feet == 1:
               if paw == 1:
-               self.x=self.x-horsewidth//2
+               self.x=self.x-horsewidth//4
                self.feet=0
         else:
           finish = True
@@ -79,7 +79,8 @@ def drawGame():
 
 
 pygame.init()
-screen_pygame = pygame.display.set_mode((screenwidth, screenheight))
+screen_pygame = pygame.display.set_mode((screenwidth * 2, screenheight * 2), 0, 24)
+screen_2x = pygame.Surface((screenwidth*2,screenheight*2), 0 , 24)
 done = False
 
 while not done:
@@ -110,5 +111,7 @@ while not done:
         size = screen.size
         data = screen.tobytes()
         screen_image = pygame.image.fromstring(data, size, mode)
-        screen_pygame.blit(screen_image,(0,0))
+        #screen_pygame.blit(screen_image,(0,0))
+        pygame.transform.scale2x(screen_image, screen_2x)
+        screen_pygame.blit(screen_2x,(0,0))
         pygame.display.flip()
