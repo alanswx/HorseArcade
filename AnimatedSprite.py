@@ -42,4 +42,3 @@ class AnimatedSprite():
             self.image = self.images[self.index]
 
         screen.paste(self.image,(x,y),self.image)
-

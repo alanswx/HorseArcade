@@ -47,8 +47,6 @@ class Horse:
               if paw == 1:
                self.x=self.x-horsewidth//4
                self.feet=0
-        else:
-          finish = True
 # init
 # draw
 # button
@@ -80,10 +78,8 @@ def drawGame(dt):
 # -- if RGB Matrix - we will draw there, otherwise use pygame
 
 #this_image = pygame.image.load("animated-horse-gif-11.gif").convert()
-
 FPS = 60
 clock = pygame.time.Clock()
-
 pygame.init()
 screen_pygame = pygame.display.set_mode((screenwidth * 2, screenheight * 2), 0, 24)
 screen_2x = pygame.Surface((screenwidth*2,screenheight*2), 0 , 24)
