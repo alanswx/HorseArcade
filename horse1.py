@@ -14,11 +14,19 @@ grass = pygame.image.load('grass.png')
 class Horse:
     def __init__(self, slotnumber):
         self.sprite=AnimatedSprite.AnimatedSprite('images/horse_0/horse_'+str(0),12)
+        self.slotnumber = slotnumber
+        self.reset()
+    def reset(self):
         self.x = screenwidth - horsewidth
-        self.y = horseheight * slotnumber
+        self.y = horseheight * self.slotnumber
         self.feet = 0
+        self.done = False
     def draw(self,dt,screen):
         self.sprite.update(dt,screen,self.x,self.y)
+        if self.x <= finishlinex:
+            self.done = True
+    def done(self):
+        return self.done
         #screen.paste(horse, (self.x, self.y), horse)
     def button(self, paw):
         if self.x > finishlinex:
@@ -30,18 +38,6 @@ class Horse:
               if paw == 1:
                self.x=self.x-horsewidth//4
                self.feet=0
-
-horses = []
-horses.append(Horse(0))
-horses.append(Horse(1))
-horses.append(Horse(2))
-horses.append(Horse(3))
-
-def drawGame(dt, screen):
-    screen.blit(grass, [0,0])
-    for horse in horses:
-        horse.draw(dt, screen)
-    return screen
 
 class States(object):
     def __init__(self):
@@ -70,32 +66,44 @@ class Start(States):
 
 class Game(States):
     def __init__(self):
+        self.horses = []
+        self.horses.append(Horse(0))
+        self.horses.append(Horse(1))
+        self.horses.append(Horse(2))
+        self.horses.append(Horse(3))
         States.__init__(self)
         self.next = 'finish'
     def startup(self):
         print('starting Game state')
+        for horse in self.horses:
+            horse.reset()
     def get_event(self, event):
         if event.type == pygame.KEYDOWN:
              if event.key == pygame.K_1:
-                horses[0].button(0)
+                self.horses[0].button(0)
              if event.key == pygame.K_2:
-                horses[0].button(1)
+                self.horses[0].button(1)
              if event.key == pygame.K_q:
-                horses[1].button(0)
+                self.horses[1].button(0)
              if event.key == pygame.K_w:
-                horses[1].button(1)
+                self.horses[1].button(1)
              if event.key == pygame.K_a:
-                horses[2].button(0)
+                self.horses[2].button(0)
              if event.key == pygame.K_s:
-                horses[2].button(1)
+                self.horses[2].button(1)
              if event.key == pygame.K_z:
-                horses[3].button(0)
+                self.horses[3].button(0)
              if event.key == pygame.K_x:
-                horses[3].button(1)
+                self.horses[3].button(1)
     def update(self, screen, dt):
         self.draw(screen, dt)
     def draw(self, screen, dt):
-        drawGame(dt, screen)
+        screen.blit(grass, [0,0])
+        for horse in self.horses:
+            horse.draw(dt, screen)
+            if horse.done:
+                self.done = True
+
 class Finish(States):
     def __init__(self):
         States.__init__(self)
@@ -147,8 +155,6 @@ class Control:
             self.update(delta_time)
             #self.screen = pygame.transform.scale(self.screen, (screenwidth*2, screenheight*2))
             pygame.display.update()
-
-
 
 settings = {
     'size':(screenwidth,screenheight),
