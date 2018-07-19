@@ -1,4 +1,4 @@
-import pygame as pygame
+import pygame
 import sys
 from PIL import Image
 import AnimatedSprite1 as AnimatedSprite
