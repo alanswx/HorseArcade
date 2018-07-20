@@ -2,6 +2,12 @@ import pygame
 import sys
 from PIL import Image
 import AnimatedSprite1 as AnimatedSprite
+
+try:
+    from matrix import MatrixScreen
+except ImportError:
+    from matrix_null import MatrixScreen
+
 screenpanels_width =  8
 screenpanels_height =  2
 screenpanel_pixels = 64
@@ -154,6 +160,11 @@ class Control:
             self.event_loop()
             self.update(delta_time)
             #self.screen = pygame.transform.scale(self.screen, (screenwidth*2, screenheight*2))
+            surface = pygame.display.get_surface()
+            data = pygame.image.tostring(surface,'RGB')
+            img = Image.frombytes('RGB',(screenwidth,screenheight),data)
+            matrix.draw(img)
+
             pygame.display.update()
 
 settings = {
@@ -168,6 +179,7 @@ state_dict = {
     'finish':Finish()
 }
 pygame.init()
+matrix = MatrixScreen()
 title = pygame.image.load('title.png').convert_alpha()
 winner = pygame.image.load('winner.png').convert_alpha()
 app.setup_states(state_dict, 'start')
