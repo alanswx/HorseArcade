@@ -10,7 +10,7 @@ screenheight = screenpanel_pixels * screenpanels_height
 horseheight = 20
 horsewidth = 32
 finishlinex = 40
-grass = pygame.image.load('grass.png')
+grass = pygame.image.load('images/background_2.png')
 class Horse:
     def __init__(self, slotnumber):
         self.sprite=AnimatedSprite.AnimatedSprite('images/horse_'+str(slotnumber+1)+'/Horse '+str(slotnumber+1),12)

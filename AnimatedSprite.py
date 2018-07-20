@@ -16,7 +16,7 @@ class AnimatedSprite():
         print("AnimatedSprite init: "+imagename)
         self.images = []
         for frameno in range(frames):
-             image_frame_name=imagename+'_'+str(frameno)+'.png'
+             image_frame_name=imagename+'-'+str(frameno.zfill(2))+'.png'
              print("AnimatedSprite loading: "+image_frame_name)
              self.images.append(Image.open(image_frame_name))
         self.index = 0
