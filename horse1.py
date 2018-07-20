@@ -16,18 +16,27 @@ screenheight = screenpanel_pixels * screenpanels_height
 horseheight = 20
 horsewidth = 32
 finishlinex = 40
+minpeople = 2
 grass = pygame.image.load('images/background_2.png')
 class Horse:
     def __init__(self, slotnumber):
         self.sprite=AnimatedSprite.AnimatedSprite('images/horse_'+str(slotnumber+1)+'/Horse '+str(slotnumber+1),12)
         self.slotnumber = slotnumber
         self.reset()
+        self.hide()
+    def hide(self):
+        self.hidden = True
+    def show(self):
+        self.hidden = False
     def reset(self):
         self.x = screenwidth - horsewidth
         self.y = horseheight * self.slotnumber
         self.feet = 0
         self.done = False
+        self.hide()
     def draw(self,dt,screen):
+        if self.hidden:
+            return
         self.sprite.update(dt,screen,self.x,self.y)
         if self.x <= finishlinex:
             self.done = True
@@ -35,6 +44,8 @@ class Horse:
         return self.done
         #screen.paste(horse, (self.x, self.y), horse)
     def button(self, paw):
+        if self.hidden:
+            return
         if self.x > finishlinex:
             if self.feet == 0:
               if paw == 0:
@@ -53,14 +64,40 @@ class States(object):
         self.previous = None
 
 class Start(States):
-    def __init__(self):
+    def __init__(self, app):
+        self.app = app
         States.__init__(self)
         self.next = 'game'
+        self.numpeople = 0
     def startup(self):
+        for horse in self.app.horses:
+            horse.reset()
+        self.numpeople = 0
         print('starting Start state')
     def get_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            self.done = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_3:
+                self.numpeople += 1
+                print('Player 0 joined')
+                print('There are '+str(self.numpeople)+' people ready')
+                self.app.horses[0].show()
+            if event.key == pygame.K_e:
+                self.numpeople += 1
+                print('Player 1 joined')
+                print('There are '+str(self.numpeople)+' people ready')
+                self.app.horses[1].show()
+            if event.key == pygame.K_d:
+                self.numpeople += 1
+                print('Player 2 joined')
+                print('There are '+str(self.numpeople)+' people ready')
+                self.app.horses[2].show()
+            if event.key == pygame.K_c:
+                self.numpeople += 1
+                print('Player 3 joined')
+                print('There are '+str(self.numpeople)+' people ready')
+                self.app.horses[3].show()
+        if self.numpeople >= minpeople:
+                self.done = True
     def update(self, screen, dt):
         self.draw(screen)
     def draw(self, screen):
@@ -71,47 +108,42 @@ class Start(States):
         screen.blit(title, title_rect)
 
 class Game(States):
-    def __init__(self):
-        self.horses = []
-        self.horses.append(Horse(0))
-        self.horses.append(Horse(1))
-        self.horses.append(Horse(2))
-        self.horses.append(Horse(3))
+    def __init__(self, app):
+        self.app = app
         States.__init__(self)
         self.next = 'finish'
     def startup(self):
         print('starting Game state')
-        for horse in self.horses:
-            horse.reset()
     def get_event(self, event):
-        if event.type == pygame.KEYDOWN:
-             if event.key == pygame.K_1:
-                self.horses[0].button(0)
-             if event.key == pygame.K_2:
-                self.horses[0].button(1)
-             if event.key == pygame.K_q:
-                self.horses[1].button(0)
-             if event.key == pygame.K_w:
-                self.horses[1].button(1)
-             if event.key == pygame.K_a:
-                self.horses[2].button(0)
-             if event.key == pygame.K_s:
-                self.horses[2].button(1)
-             if event.key == pygame.K_z:
-                self.horses[3].button(0)
-             if event.key == pygame.K_x:
-                self.horses[3].button(1)
+          if event.type == pygame.KEYDOWN:
+               if event.key == pygame.K_1:
+                  self.app.horses[0].button(0)
+               if event.key == pygame.K_2:
+                  self.app.horses[0].button(1)
+               if event.key == pygame.K_q:
+                  self.app.horses[1].button(0)
+               if event.key == pygame.K_w:
+                  self.app.horses[1].button(1)
+               if event.key == pygame.K_a:
+                  self.app.horses[2].button(0)
+               if event.key == pygame.K_s:
+                  self.app.horses[2].button(1)
+               if event.key == pygame.K_z:
+                  self.app.horses[3].button(0)
+               if event.key == pygame.K_x:
+                  self.app.horses[3].button(1)
     def update(self, screen, dt):
         self.draw(screen, dt)
     def draw(self, screen, dt):
         screen.blit(grass, [0,0])
-        for horse in self.horses:
+        for horse in self.app.horses:
             horse.draw(dt, screen)
             if horse.done:
                 self.done = True
 
 class Finish(States):
-    def __init__(self):
+    def __init__(self, app):
+        self.app = app
         States.__init__(self)
         self.next = 'start'
     def startup(self):
@@ -133,10 +165,17 @@ class Control:
         self.done = False
         self.screen = pygame.display.set_mode(self.size)
         self.clock = pygame.time.Clock()
+        self.horses = []
+        self.horses.append(Horse(0))
+        self.horses.append(Horse(1))
+        self.horses.append(Horse(2))
+        self.horses.append(Horse(3))
     def setup_states(self, state_dict, start_state):
         self.state_dict = state_dict
         self.state_name = start_state
         self.state = self.state_dict[self.state_name]
+        self.state.startup()
+
     def flip_state(self):
         self.state.done = False
         previous,self.state_name = self.state_name, self.state.next
@@ -174,9 +213,9 @@ settings = {
 
 app = Control(**settings)
 state_dict = {
-    'start': Start(),
-    'game': Game(),
-    'finish':Finish()
+    'start': Start(app),
+    'game': Game(app),
+    'finish':Finish(app)
 }
 pygame.init()
 matrix = MatrixScreen()
