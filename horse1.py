@@ -13,7 +13,7 @@ finishlinex = 40
 grass = pygame.image.load('grass.png')
 class Horse:
     def __init__(self, slotnumber):
-        self.sprite=AnimatedSprite.AnimatedSprite('images/horse_0/horse_'+str(0),12)
+        self.sprite=AnimatedSprite.AnimatedSprite('images/horse_'+str(slotnumber+1)+'/Horse '+str(slotnumber+1),12)
         self.x = screenwidth - horsewidth
         self.y = horseheight * slotnumber
         self.feet = 0
