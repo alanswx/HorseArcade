@@ -70,6 +70,8 @@ class Start(States):
         self.next = 'game'
         self.numpeople = 0
     def startup(self):
+        self.timerStarted = False
+        self.time = 0
         for horse in self.app.horses:
             horse.reset()
         self.numpeople = 0
@@ -77,29 +79,36 @@ class Start(States):
     def get_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_3:
-                self.numpeople += 1
-                print('Player 0 joined')
-                print('There are '+str(self.numpeople)+' people ready')
+                if self.app.horses[0].hidden:
+                    self.numpeople += 1
+                    print('Player 0 joined')
+                    print('There are '+str(self.numpeople)+' people ready')
                 self.app.horses[0].show()
             if event.key == pygame.K_e:
-                self.numpeople += 1
-                print('Player 1 joined')
-                print('There are '+str(self.numpeople)+' people ready')
+                if self.app.horses[1].hidden:
+                    self.numpeople += 1
+                    print('Player 1 joined')
+                    print('There are '+str(self.numpeople)+' people ready')
                 self.app.horses[1].show()
             if event.key == pygame.K_d:
-                self.numpeople += 1
-                print('Player 2 joined')
-                print('There are '+str(self.numpeople)+' people ready')
+                if self.app.horses[2].hidden:
+                    self.numpeople += 1
+                    print('Player 2 joined')
+                    print('There are '+str(self.numpeople)+' people ready')
                 self.app.horses[2].show()
             if event.key == pygame.K_c:
-                self.numpeople += 1
-                print('Player 3 joined')
-                print('There are '+str(self.numpeople)+' people ready')
+                if self.app.horses[3].hidden:
+                    self.numpeople += 1
+                    print('Player 3 joined')
+                    print('There are '+str(self.numpeople)+' people ready')
                 self.app.horses[3].show()
         if self.numpeople >= minpeople:
-                self.done = True
+                self.timerStarted = True
     def update(self, screen, dt):
         self.draw(screen)
+        self.time = self.time + dt
+        if self.time > 10:
+            self.done = True
     def draw(self, screen):
         screen.blit(grass, [0,0])
         title_rect = title.get_rect()
@@ -175,7 +184,6 @@ class Control:
         self.state_name = start_state
         self.state = self.state_dict[self.state_name]
         self.state.startup()
-
     def flip_state(self):
         self.state.done = False
         previous,self.state_name = self.state_name, self.state.next
