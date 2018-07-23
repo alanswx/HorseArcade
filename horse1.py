@@ -106,8 +106,9 @@ class Start(States):
                 self.timerStarted = True
     def update(self, screen, dt):
         self.draw(screen)
-        self.time = self.time + dt
-        if self.time > 10:
+        if self.timerStarted == True:
+            self.time = self.time + dt
+        if self.time > 10 and self.timerStarted == True:
             self.done = True
     def draw(self, screen):
         screen.blit(grass, [0,0])
