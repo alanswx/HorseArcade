@@ -2,6 +2,7 @@ import pygame
 import sys
 from PIL import Image
 import AnimatedSprite1 as AnimatedSprite
+import AnimatedCountdown
 
 try:
     from matrix import MatrixScreen
@@ -24,6 +25,8 @@ class Horse:
         self.slotnumber = slotnumber
         self.reset()
         self.hide()
+        self.current_time = 0 # for time logging
+        self.timerStarted = False
     def hide(self):
         self.hidden = True
     def show(self):
@@ -34,15 +37,29 @@ class Horse:
         self.feet = 0
         self.done = False
         self.hide()
-    def draw(self,dt,screen):
+        self.current_time = 0 # for time logging
+        self.timerStarted = False
+    def draw(self,dt,screen, start):
         if self.hidden:
             return
-        self.sprite.update(dt,screen,self.x,self.y)
-        if self.x <= finishlinex:
-            self.done = True
+        if start == True:
+            self.timerStarted = True
+        if self.timerStarted == True:
+            self.current_time += dt # for time logging
+        if start == True and self.slotnumber == 0:
+            screen.blit(still0, [self.x,self.y])
+        if start == True and self.slotnumber == 1:
+            screen.blit(still1, [self.x,self.y])
+        if start == True and self.slotnumber == 2:
+            screen.blit(still2, [self.x,self.y])
+        if start == True and self.slotnumber == 3:
+            screen.blit(still3, [self.x,self.y])
+        if start == False:
+            self.sprite.update(dt,screen,self.x,self.y)
+            if self.x <= finishlinex:
+                self.done = True
     def done(self):
         return self.done
-        #screen.paste(horse, (self.x, self.y), horse)
     def button(self, paw):
         if self.hidden:
             return
@@ -55,6 +72,8 @@ class Horse:
               if paw == 1:
                self.x=self.x-horsewidth//4
                self.feet=0
+        elif self.x < finishlinex:
+            self.timerStarted = False
 
 class States(object):
     def __init__(self):
@@ -65,13 +84,14 @@ class States(object):
 
 class Start(States):
     def __init__(self, app):
+        self.sprite=AnimatedCountdown.AnimatedSprite('images/countdown',6, 5)
         self.app = app
         States.__init__(self)
         self.next = 'game'
         self.numpeople = 0
     def startup(self):
         self.timerStarted = False
-        self.time = 0
+        self.time = 6
         for horse in self.app.horses:
             horse.reset()
         self.numpeople = 0
@@ -105,24 +125,32 @@ class Start(States):
         if self.numpeople >= minpeople:
                 self.timerStarted = True
     def update(self, screen, dt):
-        self.draw(screen)
+        self.draw(screen, dt)
         if self.timerStarted == True:
-            self.time = self.time + dt
-        if self.time > 10 and self.timerStarted == True:
+            self.time = self.time - dt
+        if self.time < 0 and self.timerStarted == True:
             self.done = True
-    def draw(self, screen):
+    def draw(self, screen, dt):
         screen.blit(grass, [0,0])
-        title_rect = title.get_rect()
-        title_rect.centerx = 256
-        title_rect.centery = 64
-        screen.blit(title, title_rect)
-
+        if self.timerStarted == False:
+            screen.blit(grass, [0,0])
+            title_rect = title.get_rect()
+            title_rect.centerx = 256
+            title_rect.centery = 64
+            screen.blit(title, title_rect)
+        if self.timerStarted == True:
+            self.sprite.update(dt, screen)
+        for horse in self.app.horses:
+            horse.draw(dt, screen, True)
 class Game(States):
     def __init__(self, app):
+        self.sprite=AnimatedCountdown.AnimatedSprite('images/countdownend', 5, 4)
         self.app = app
         States.__init__(self)
         self.next = 'finish'
     def startup(self):
+        self.timerStarted = False
+        self.time = 5
         print('starting Game state')
     def get_event(self, event):
           if event.type == pygame.KEYDOWN:
@@ -144,12 +172,18 @@ class Game(States):
                   self.app.horses[3].button(1)
     def update(self, screen, dt):
         self.draw(screen, dt)
+        if self.timerStarted == True:
+            self.time = self.time - dt
+        if self.time < 0 and self.timerStarted == True:
+            self.done = True
     def draw(self, screen, dt):
         screen.blit(grass, [0,0])
         for horse in self.app.horses:
-            horse.draw(dt, screen)
+            horse.draw(dt, screen, False)
             if horse.done:
-                self.done = True
+                self.timerStarted = True
+        if self.timerStarted == True:
+            self.sprite.update1(dt, screen)
 
 class Finish(States):
     def __init__(self, app):
@@ -158,6 +192,8 @@ class Finish(States):
         self.next = 'start'
     def startup(self):
         print('starting Finish state')
+        for horse in self.app.horses:
+            print(str(horse.slotnumber+1)+': ' + str(horse.current_time)) #printing timings
     def get_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.done = True
@@ -212,7 +248,6 @@ class Control:
             data = pygame.image.tostring(surface,'RGB')
             img = Image.frombytes('RGB',(screenwidth,screenheight),data)
             matrix.draw(img)
-
             pygame.display.update()
 
 settings = {
@@ -230,6 +265,10 @@ pygame.init()
 matrix = MatrixScreen()
 title = pygame.image.load('title.png').convert_alpha()
 winner = pygame.image.load('winner.png').convert_alpha()
+still0 = pygame.image.load('images/horses_still/Horse 01.png')
+still1 = pygame.image.load('images/horses_still/Horse 02.png')
+still2 = pygame.image.load('images/horses_still/Horse 03.png')
+still3 = pygame.image.load('images/horses_still/Horse 04.png')
 app.setup_states(state_dict, 'start')
 app.main_game_loop()
 pygame.quit()
