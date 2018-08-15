@@ -255,8 +255,8 @@ state_dict = {
 }
 pygame.init()
 matrix = MatrixScreen()
-title = pygame.image.load('title.png').convert_alpha()
-winner = pygame.image.load('winner.png').convert_alpha()
+title = pygame.image.load('images/title.png').convert_alpha()
+winner = pygame.image.load('images/winner.png').convert_alpha()
 app.setup_states(state_dict, 'start')
 app.main_game_loop()
 pygame.quit()
