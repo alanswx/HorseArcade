@@ -46,15 +46,13 @@ class AnimatedSprite():
             self.index = (self.index + self.offset) % len(self.images)
             self.image = self.images[self.index]
         self.image_rect = self.image.get_rect()
-        if not x:
+        if not x and not self.label:
             self.image_rect.center = (width/2, height/2)
             screen.blit(self.image, self.image_rect)
-
-        else:
+        elif not self.label:
             screen.blit(self.image, [x,y])
         if self.label:
             self.image_rect.center = (width - (width/8), height/2) #should be calculated later
             screen.blit(self.image, self.image_rect)
             self.label_rect.center = (width/2,height/2)
             screen.blit(self.label, self.label_rect)
-        pygame.display.update()
