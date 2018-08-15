@@ -5,7 +5,7 @@ import pygame
 
 class AnimatedSprite():
 
-    def __init__(self, imagename,frames, index):
+    def __init__(self, imagename, frames, index = 0, label=None,offset=1,animation_time=.1):
         """
         Animated sprite object.
 
@@ -16,49 +16,45 @@ class AnimatedSprite():
         print("AnimatedSprite init: "+imagename)
         self.images = []
         for frameno in range(frames):
-             image_frame_name=imagename+format(frameno)+'.png'
+             image_frame_name=imagename+str('{0:02d}'.format(frameno+1))+'.png'
              print("AnimatedSprite loading: "+image_frame_name)
              self.images.append(pygame.image.load(image_frame_name).convert_alpha())
         self.index = index
         self.image = self.images[self.index]  # 'image' is the current image of the animation.
-        self.animation_time = 1
+        self.animation_time = animation_time
         self.current_time = 0
+        self.offset=offset
 
         self.current_frame = 0
-        self.end = pygame.image.load('images/endgame.png').convert_alpha()
-        self.end_rect = self.end.get_rect()
-    def update(self, dt, screen):
+        self.label = label
+        #self.label = pygame.image.load('images/endgame.png').convert_alpha()
+        if self.label:
+            self.label_rect = self.label.get_rect()
+    def update(self, dt, screen, x=None,y=None):
         """
         Updates the image of Sprite approximately every 0.1 second.
 
         Args:
             dt: Time elapsed between each frame.
         """
-        self.current_time += dt
-        if self.current_time >= self.animation_time:
-            self.current_time = 0
-            self.index = (self.index - 1) % len(self.images)
-            self.image = self.images[self.index]
-        self.image_rect = self.image.get_rect()
-        self.image_rect.center = (256, 64)
-        screen.blit(self.image, self.image_rect)
-        self.image_rect.center = (256, 64)
-        pygame.display.update
-    def update1(self, dt, screen):
-        """
-        Updates the image of Sprite approximately every 0.1 second.
+        width = screen.get_width()
+        height = screen.get_height()
 
-        Args:
-            dt: Time elapsed between each frame.
-        """
         self.current_time += dt
         if self.current_time >= self.animation_time:
             self.current_time = 0
-            self.index = (self.index - 1) % len(self.images)
+            self.index = (self.index + self.offset) % len(self.images)
             self.image = self.images[self.index]
         self.image_rect = self.image.get_rect()
-        self.image_rect.center = (384, 64)
-        screen.blit(self.image, self.image_rect)
-        self.end_rect.center = (192,64)
-        screen.blit(self.end, self.end_rect)
-        pygame.display.update
+        if not x:
+            self.image_rect.center = (width/2, height/2)
+            screen.blit(self.image, self.image_rect)
+
+        else:
+            screen.blit(self.image, [x,y])
+        if self.label:
+            self.image_rect.center = (width - (width/8), height/2) #should be calculated later
+            screen.blit(self.image, self.image_rect)
+            self.label_rect.center = (width/2,height/2)
+            screen.blit(self.label, self.label_rect)
+        pygame.display.update()
