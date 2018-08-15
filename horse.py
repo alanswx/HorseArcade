@@ -4,7 +4,7 @@ from PIL import Image
 import AnimatedSprite
 
 try:
-    from matrix import MatrixScreen
+    from mf import MatrixScreen
 except ImportError:
     from matrix_null import MatrixScreen
 
