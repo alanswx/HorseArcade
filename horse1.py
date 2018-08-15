@@ -1,7 +1,6 @@
 import pygame
 import sys
 from PIL import Image
-import AnimatedSprite1 as AnimatedSprite
 import AnimatedSprite
 
 try:
