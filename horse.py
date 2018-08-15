@@ -87,6 +87,9 @@ class Start(States):
         self.numpeople = 0
         print('starting Start state')
     def get_event(self, event):
+        if event.type == pygame.JOYBUTTONUP:
+            print("Joystick button released.")
+            print(event)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_3:
                 if self.app.horses[0].hidden:
@@ -254,6 +257,12 @@ state_dict = {
     'finish':Finish(app)
 }
 pygame.init()
+pygame.joystick.init()
+joystick_count = pygame.joystick.get_count()
+for i in range(joystick_count):
+        joystick = pygame.joystick.Joystick(i)
+        joystick.init()
+
 matrix = MatrixScreen()
 title = pygame.image.load('images/title.png').convert_alpha()
 winner = pygame.image.load('images/winner.png').convert_alpha()
