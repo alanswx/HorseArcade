@@ -73,4 +73,8 @@ class Flaschen(object):
     #compressed_data = self._data
     compressed_data = zlib.compress(self._data)
     #print(len(compressed_data))
-    self._sock.send(compressed_data)
+    try:
+       self._sock.send(compressed_data)
+    except Exception as  e: 
+      print(e)
+      print('sudo sysctl -w net.inet.udp.maxdgram=65535')
