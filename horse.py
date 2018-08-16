@@ -146,7 +146,6 @@ class Game(States):
         self.time = 5
         for horse in self.app.horses:
             horse.reset_time()
-
         print('starting Game state')
     def get_event(self, event):
           if event.type == pygame.KEYDOWN:
@@ -180,7 +179,6 @@ class Game(States):
                 self.timerStarted = True
         if self.timerStarted == True:
             self.sprite.update(dt, screen)
-
 class Finish(States):
     def __init__(self, app):
         self.app = app
@@ -190,7 +188,14 @@ class Finish(States):
         print('starting Finish state')
         for horse in self.app.horses:
             print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)) #printing timings
-
+            if horse.endTime - horse.startTime == 0:
+                horse.endTime = horse.startTime+9999999
+        sortedlist = self.app.horses.copy()
+        sortedList=sorted(sortedlist, key=lambda horse: (horse.endTime,horse.x))
+        print('')
+        for horse in sortedList:
+            #print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)) #printing timings
+            print(str(horse.slotnumber+1)+': '+str(horse.endTime/1000)+' '+str(horse.x))
     def get_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.done = True
