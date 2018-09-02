@@ -7,6 +7,7 @@ try:
     from mf import MatrixScreen
 except ImportError:
     from matrix_null import MatrixScreen
+#from matrix_null import MatrixScreen
 
 screenpanels_width =  8
 screenpanels_height =  2
@@ -17,6 +18,8 @@ horseheight = 20
 horsewidth = 32
 finishlinex = 40
 minpeople = 2
+SONG_END = pygame.USEREVENT + 1
+
 grass = pygame.image.load('images/background_2.png')
 class Horse:
     def __init__(self, slotnumber):
@@ -86,6 +89,9 @@ class Start(States):
             horse.reset()
         self.numpeople = 0
         print('starting Start state')
+
+
+
     def get_event(self, event):
         if event.type == pygame.JOYBUTTONUP:
             print("Joystick button released.")
@@ -116,7 +122,13 @@ class Start(States):
                     print('There are '+str(self.numpeople)+' people ready')
                 self.app.horses[3].show()
         if self.numpeople >= minpeople:
+                if self.timerStarted==False:
+                    pygame.mixer.music.load('sounds/racestart.ogg')
+                    pygame.mixer.music.set_endevent(SONG_END)
+
+                    pygame.mixer.music.play(0)
                 self.timerStarted = True
+
     def update(self, screen, dt):
         self.draw(screen, dt)
         if self.timerStarted == True:
@@ -147,7 +159,13 @@ class Game(States):
         for horse in self.app.horses:
             horse.reset_time()
         print('starting Game state')
+
     def get_event(self, event):
+          if event.type == SONG_END:
+            print("the song ended!")
+            pygame.mixer.music.load('sounds/horsesounds.ogg')
+            pygame.mixer.music.play(0)
+
           if event.type == pygame.KEYDOWN:
                if event.key == pygame.K_1:
                   self.app.horses[0].button(0)
@@ -186,6 +204,9 @@ class Finish(States):
         self.next = 'start'
     def startup(self):
         print('starting Finish state')
+        pygame.mixer.music.load('sounds/finish.ogg')
+        pygame.mixer.music.play(0)
+
         for horse in self.app.horses:
             print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)) #printing timings
             if horse.endTime - horse.startTime == 0:
