@@ -23,6 +23,7 @@ class Horse:
         self.sprite=AnimatedSprite.AnimatedSprite('images/horse_'+str(slotnumber+1)+'/Horse '+str(slotnumber+1)+'-',12)
         self.still = pygame.image.load('images/horses_still/Horse 0'+str(slotnumber +1)+'.png')
         self.slotnumber = slotnumber
+        self.character = pygame.image.load('images/horse_'+str(self.slotnumber + 1)+'/Horse Character '+str(self.slotnumber + 1) +'.png').convert_alpha()
         self.reset()
         self.hide()
     def hide(self):
@@ -190,23 +191,29 @@ class Finish(States):
             print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)) #printing timings
             if horse.endTime - horse.startTime == 0:
                 horse.endTime = horse.startTime+9999999
-        sortedlist = self.app.horses.copy()
-        sortedList=sorted(sortedlist, key=lambda horse: (horse.endTime,horse.x))
-        print('')
-        for horse in sortedList:
-            #print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)) #printing timings
-            print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)+' '+str(horse.x))
+        self.sortedlist = self.app.horses.copy()
+        self.sortedList=sorted(self.sortedlist, key=lambda horse: (horse.endTime,horse.x))
     def get_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.done = True
     def update(self, screen, dt):
         self.draw(screen)
     def draw(self, screen):
-        screen.blit(grass, [0,0])
-        #winner_rect = winner.get_rect()
-        #winner_rect.centerx = 256
-        #winner_rect.centery = 64
-        #screen.blit(winner, winner_rect)
+        screen.blit(results, [0,0])
+        for col in range(2):
+            for row in range(2):
+                horse=self.sortedList[col*2+row]
+                if not horse.hidden:
+                    #print((col,row))
+                    #print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)+' '+str(horse.x))
+                    horsecharacter = horse.character
+                    horsecharacter_rect = horsecharacter.get_rect()
+                    horsecharacter_rect.x = ((col) * 256) + 40
+                    horsecharacter_rect.y = ((row) * 24) + 64
+                    screen.blit(horsecharacter, horsecharacter_rect)
+                    myfont = pygame.font.SysFont('Comic Sans MS', 30)
+                    textsurface = myfont.render(str(horse.endTime-horse.startTime/1000), True, (255,255,255))
+                    screen.blit(textsurface, (horsecharacter_rect.x + 64, horsecharacter_rect.y))
 class Control:
     def __init__(self, **settings):
         self.__dict__.update(settings)
@@ -270,7 +277,7 @@ for i in range(joystick_count):
 
 matrix = MatrixScreen()
 title = pygame.image.load('images/title.png').convert_alpha()
-winner = pygame.image.load('images/winner.png').convert_alpha()
+results = pygame.image.load('images/results.png').convert_alpha()
 app.setup_states(state_dict, 'start')
 app.main_game_loop()
 pygame.quit()
