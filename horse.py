@@ -22,7 +22,8 @@ SONG_END = pygame.USEREVENT + 1
 
 grass = pygame.image.load('images/background_2.png')
 class Horse:
-    def __init__(self, slotnumber):
+    def __init__(self, slotnumber, name):
+        self.name = name
         self.sprite=AnimatedSprite.AnimatedSprite('images/horse_'+str(slotnumber+1)+'/Horse '+str(slotnumber+1)+'-',12)
         self.still = pygame.image.load('images/horses_still/Horse 0'+str(slotnumber +1)+'.png')
         self.slotnumber = slotnumber
@@ -229,11 +230,19 @@ class Finish(States):
                     horsecharacter = horse.character
                     horsecharacter_rect = horsecharacter.get_rect()
                     horsecharacter_rect.x = ((col) * 256) + 40
-                    horsecharacter_rect.y = ((row) * 24) + 64
+                    horsecharacter_rect.y = ((row) * 32) + 56
                     screen.blit(horsecharacter, horsecharacter_rect)
                     myfont = pygame.font.SysFont('fonts/Bebas Neue.ttf', 20)
-                    textsurface = myfont.render(str((horse.endTime-horse.startTime)/1000), True, (255,255,255))
-                    screen.blit(textsurface, (horsecharacter_rect.x + 64, horsecharacter_rect.y))
+                    textsurface = myfont.render(str(horse.name), True, (255,255,255))
+                    screen.blit(textsurface, (horsecharacter_rect.x + 48, horsecharacter_rect.y+8))
+                    if horse.endTime < 9000000:
+                        myfont = pygame.font.SysFont('fonts/Bebas Neue.ttf', 20)
+                        textsurface = myfont.render(str(round((horse.endTime-horse.startTime)/1000 ,2)), True, (255,255,255))
+                        screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
+                    else:
+                        myfont = pygame.font.SysFont('fonts/Bebas Neue.ttf', 20)
+                        textsurface = myfont.render('DNF', True, (255,255,255))
+                        screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
 class Control:
     def __init__(self, **settings):
         self.__dict__.update(settings)
@@ -241,8 +250,9 @@ class Control:
         self.screen = pygame.display.set_mode(self.size)
         self.clock = pygame.time.Clock()
         self.horses = []
+        names = ['Sea Biscuit','Sweeny','Secretariat','Sympatico']
         for horsenum in range(4):
-            self.horses.append(Horse(horsenum))
+            self.horses.append(Horse(horsenum, names[horsenum]))
     def setup_states(self, state_dict, start_state):
         self.state_dict = state_dict
         self.state_name = start_state
