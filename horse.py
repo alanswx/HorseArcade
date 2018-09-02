@@ -43,12 +43,12 @@ class Horse:
     def reset_time(self):
         self.startTime = pygame.time.get_ticks() # for time logging
         self.endTime = pygame.time.get_ticks()
-    def draw(self,dt,screen, start):
+    def draw(self,dt,screen, numpeople):
         if self.hidden:
             return
-        if start == True or self.done == True:
+        if numpeople >= 2 or self.done == True:
             screen.blit(self.still, [self.x,self.y])
-        elif start == False:
+        elif numpeople == -1:
             self.sprite.update(dt,screen,self.x,self.y)
             if self.x <= finishlinex:
                 self.done = True
@@ -91,9 +91,6 @@ class Start(States):
             horse.reset()
         self.numpeople = 0
         print('starting Start state')
-
-
-
     def get_event(self, event):
         if event.type == pygame.JOYBUTTONUP:
             print("Joystick button released.")
@@ -127,10 +124,8 @@ class Start(States):
                 if self.timerStarted==False:
                     pygame.mixer.music.load('sounds/racestart.ogg')
                     pygame.mixer.music.set_endevent(SONG_END)
-
                     pygame.mixer.music.play(0)
                 self.timerStarted = True
-
     def update(self, screen, dt):
         self.draw(screen, dt)
         if self.timerStarted == True:
@@ -140,15 +135,11 @@ class Start(States):
     def draw(self, screen, dt):
         screen.blit(grass, [0,0])
         if self.timerStarted == False:
-            screen.blit(grass, [0,0])
-            title_rect = title.get_rect()
-            title_rect.centerx = 256
-            title_rect.centery = 64
-            screen.blit(title, title_rect)
+            screen.blit(title, [0,0])
         if self.timerStarted == True:
             self.sprite.update(dt, screen)
         for horse in self.app.horses:
-            horse.draw(dt, screen, True)
+            horse.draw(dt, screen, self.numpeople)
 class Game(States):
     def __init__(self, app):
         self.sprite=AnimatedSprite.AnimatedSprite('images/countdownend', 5, 4, pygame.image.load('images/endgame.png').convert_alpha(),offset=-1,animation_time=1)
@@ -194,7 +185,7 @@ class Game(States):
     def draw(self, screen, dt):
         screen.blit(grass, [0,0])
         for horse in self.app.horses:
-            horse.draw(dt, screen, False)
+            horse.draw(dt, screen, -1)
             if horse.done:
                 self.timerStarted = True
         if self.timerStarted == True:
@@ -306,7 +297,7 @@ for i in range(joystick_count):
         joystick.init()
 
 matrix = MatrixScreen()
-title = pygame.image.load('images/title.png').convert_alpha()
+title = pygame.image.load('images/splash.png').convert_alpha()
 results = pygame.image.load('images/results.png').convert_alpha()
 app.setup_states(state_dict, 'start')
 app.main_game_loop()
