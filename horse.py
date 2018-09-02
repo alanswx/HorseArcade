@@ -231,8 +231,8 @@ class Finish(States):
                     horsecharacter_rect.x = ((col) * 256) + 40
                     horsecharacter_rect.y = ((row) * 24) + 64
                     screen.blit(horsecharacter, horsecharacter_rect)
-                    myfont = pygame.font.SysFont('Comic Sans MS', 30)
-                    textsurface = myfont.render(str(horse.endTime-horse.startTime/1000), True, (255,255,255))
+                    myfont = pygame.font.SysFont('fonts/Bebas Neue.ttf', 20)
+                    textsurface = myfont.render(str((horse.endTime-horse.startTime)/1000), True, (255,255,255))
                     screen.blit(textsurface, (horsecharacter_rect.x + 64, horsecharacter_rect.y))
 class Control:
     def __init__(self, **settings):
