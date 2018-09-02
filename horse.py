@@ -195,7 +195,7 @@ class Finish(States):
         print('')
         for horse in sortedList:
             #print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)) #printing timings
-            print(str(horse.slotnumber+1)+': '+str(horse.endTime/1000)+' '+str(horse.x))
+            print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)+' '+str(horse.x))
     def get_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.done = True
@@ -203,10 +203,10 @@ class Finish(States):
         self.draw(screen)
     def draw(self, screen):
         screen.blit(grass, [0,0])
-        winner_rect = winner.get_rect()
-        winner_rect.centerx = 256
-        winner_rect.centery = 64
-        screen.blit(winner, winner_rect)
+        #winner_rect = winner.get_rect()
+        #winner_rect.centerx = 256
+        #winner_rect.centery = 64
+        #screen.blit(winner, winner_rect)
 class Control:
     def __init__(self, **settings):
         self.__dict__.update(settings)
