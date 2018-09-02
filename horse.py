@@ -207,7 +207,6 @@ class Finish(States):
         print('starting Finish state')
         pygame.mixer.music.load('sounds/finish.ogg')
         pygame.mixer.music.play(0)
-
         for horse in self.app.horses:
             print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)) #printing timings
             if horse.endTime - horse.startTime == 0:
