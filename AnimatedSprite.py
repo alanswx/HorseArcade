@@ -37,8 +37,10 @@ class AnimatedSprite():
         Args:
             dt: Time elapsed between each frame.
         """
-        width = screen.get_width()
-        height = screen.get_height()
+        #width = screen.get_width()
+        #height = screen.get_height()
+        width = 512 
+        height = 128 
 
         self.current_time += dt
         if self.current_time >= self.animation_time:

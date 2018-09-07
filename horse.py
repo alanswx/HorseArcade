@@ -1,13 +1,20 @@
 import pygame
 import sys
+
+x = 0
+y = 0
+import os
+os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
+
+
 from PIL import Image
 import AnimatedSprite
 
-try:
-    from mf import MatrixScreen
-except ImportError:
-    from matrix_null import MatrixScreen
-#from matrix_null import MatrixScreen
+#try:
+#    from mf import MatrixScreen
+#except ImportError:
+#    from matrix_null import MatrixScreen
+from matrix_null import MatrixScreen
 
 screenpanels_width =  8
 screenpanels_height =  2
@@ -20,7 +27,7 @@ finishlinex = 40
 minpeople = 2
 SONG_END = pygame.USEREVENT + 1
 
-grass = pygame.image.load('images/background_2.png')
+grass = pygame.image.load('images/background_3.png')
 class Horse:
     def __init__(self, slotnumber, name):
         self.name = name
@@ -96,6 +103,8 @@ class Start(States):
             print("Joystick button released.")
             print(event)
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+               self.quit = True
             if event.key == pygame.K_3:
                 if self.app.horses[0].hidden:
                     self.numpeople += 1
@@ -176,6 +185,8 @@ class Game(States):
                   self.app.horses[3].button(0)
                if event.key == pygame.K_x:
                   self.app.horses[3].button(1)
+               if event.key == pygame.K_ESCAPE:
+                  self.quit = True
     def update(self, screen, dt):
         self.draw(screen, dt)
         if self.timerStarted == True:
@@ -208,6 +219,11 @@ class Finish(States):
     def get_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.done = True
+        if event.type == pygame.KEYDOWN:
+               if event.key == pygame.K_1:
+                  self.done = True
+               if event.key == pygame.K_ESCAPE:
+                  self.quit = True
     def update(self, screen, dt):
         self.draw(screen)
     def draw(self, screen):
@@ -238,7 +254,8 @@ class Control:
     def __init__(self, **settings):
         self.__dict__.update(settings)
         self.done = False
-        self.screen = pygame.display.set_mode(self.size)
+        #self.screen = pygame.display.set_mode(self.size,pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((640,480),pygame.FULLSCREEN)
         self.clock = pygame.time.Clock()
         self.horses = []
         names = ['Sea Biscuit','Sweeny','Secretariat','Sympatico']
@@ -280,7 +297,7 @@ class Control:
 
 settings = {
     'size':(screenwidth,screenheight),
-    'fps' :60
+    'fps' :120
 }
 
 app = Control(**settings)
