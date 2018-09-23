@@ -102,6 +102,30 @@ class Start(States):
         if event.type == pygame.JOYBUTTONUP:
             print("Joystick button released.")
             print(event)
+            if event.button==0:
+                if self.app.horses[0].hidden:
+                    self.numpeople += 1
+                    print('Player 0 joined')
+                    print('There are '+str(self.numpeople)+' people ready')
+                self.app.horses[0].show()
+            if event.button==2:
+                if self.app.horses[1].hidden:
+                    self.numpeople += 1
+                    print('Player 1 joined')
+                    print('There are '+str(self.numpeople)+' people ready')
+                self.app.horses[1].show()
+            if event.button==4:
+                if self.app.horses[2].hidden:
+                    self.numpeople += 1
+                    print('Player 2 joined')
+                    print('There are '+str(self.numpeople)+' people ready')
+                self.app.horses[2].show()
+            if event.button==6:
+                if self.app.horses[3].hidden:
+                    self.numpeople += 1
+                    print('Player 3 joined')
+                    print('There are '+str(self.numpeople)+' people ready')
+                self.app.horses[3].show()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                self.quit = True
@@ -168,6 +192,25 @@ class Game(States):
             pygame.mixer.music.load('sounds/horsesounds.ogg')
             pygame.mixer.music.play(0)
 
+          if event.type == pygame.JOYBUTTONUP:
+            print("Joystick button released.")
+            print(event)
+            if event.button==0:
+                  self.app.horses[0].button(0)
+            if event.button==1:
+                  self.app.horses[0].button(1)
+            if event.button==2:
+                  self.app.horses[1].button(0)
+            if event.button==3:
+                  self.app.horses[1].button(1)
+            if event.button==4:
+                  self.app.horses[2].button(0)
+            if event.button==5:
+                  self.app.horses[2].button(1)
+            if event.button==6:
+                  self.app.horses[3].button(0)
+            if event.button==7:
+                  self.app.horses[3].button(1)
           if event.type == pygame.KEYDOWN:
                if event.key == pygame.K_1:
                   self.app.horses[0].button(0)
@@ -217,6 +260,11 @@ class Finish(States):
         self.sortedlist = self.app.horses.copy()
         self.sortedList=sorted(self.sortedlist, key=lambda horse: (horse.endTime,horse.x))
     def get_event(self, event):
+        if event.type == pygame.JOYBUTTONUP:
+            print("Joystick button released.")
+            print(event)
+            if event.button==0:
+               self.done = True
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.done = True
         if event.type == pygame.KEYDOWN:
