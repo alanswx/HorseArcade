@@ -78,6 +78,72 @@ class Horse:
         elif self.x < config.finishlinex:
             self.timerStarted = False
 
+class Grass:
+  def __init__(self):
+    self.grass = pygame.image.load(os.path.join(config.imagePath, 'background_3.png'))
+
+  def draw(self, screen, pos):
+    screen.blit(self.grass, pos)
+
+class Grass2:
+  def __init__(self):
+    self.wheel = pygame.image.load(os.path.join(config.imagePath, 'track', 'wheel.png'))
+    self.uppertrack = pygame.image.load(os.path.join(config.imagePath, 'track', 'uppertrack.png'))
+    self.lowertrack = pygame.image.load(os.path.join(config.imagePath, 'track', 'lowertrack.png'))
+
+  def draw(self, screen, pos):
+    x = pos[0]
+    y = pos[1]
+
+    greens = []
+    hgreens = []
+    greens.append((142, 252, 3)) ## first
+    hgreens.append((26, 223, 1))
+    
+    greens.append((33, 223, 1))
+    hgreens.append((48, 227, 2))
+
+    greens.append((114, 244, 14))
+    hgreens.append((59, 227, 34))
+    
+    greens.append((33, 223, 1))  ## extra
+    hgreens.append((48, 227, 2))
+
+    greens.append((142, 252, 3)) ## extra 2
+    hgreens.append((26, 223, 1))
+
+    greens.append((13, 202, 4))
+    hgreens.append((25, 209, 21))
+
+    greens.append((38, 221, 42))  ## last
+    hgreens.append((7, 195, 6))
+
+    screen.set_clip((0,0,config.tracksize[0], config.tracksize[1]))
+
+
+    screen.blit(self.uppertrack, [x, y])
+    if self.uppertrack.get_size()[0]+x < config.tracksize[0]: 
+      screen.blit(self.uppertrack, [self.uppertrack.get_size()[0]+x, y])
+
+    screen.blit(self.wheel, [x+15, y+11])
+
+    y += self.uppertrack.get_size()[1]
+    pygame.draw.rect(screen, greens[0], (x, y, config.tracksize[0], config.horsesize[1]))
+
+    y += int(config.horsesize[1]/2)
+    dy = config.horsesize[1]-1
+    for n in range(len(config.horseNames)-1):
+      pygame.draw.rect(screen, greens[n+1], (x, y, config.tracksize[0], dy))
+      pygame.draw.rect(screen, hgreens[n+1], (x, y+dy, config.tracksize[0], dy+1))
+      y += config.horsesize[1]
+
+    y -= 2
+    screen.blit(self.lowertrack, [pos[0], y])
+    if self.lowertrack.get_size()[0]+x < config.tracksize[0]: 
+      screen.blit(self.lowertrack, [self.lowertrack.get_size()[0]+pos[0], y])
+    screen.blit(self.wheel, [x+15, y - 8])
+
+
 class States(object):
     def __init__(self):
         self.done = False
@@ -87,7 +153,7 @@ class States(object):
 
 class Start(States):
     def __init__(self, app):
-        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdown'),6, 5,offset=-1,animation_time=1)
+        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdown'), 6, 5,offset=-1,animation_time=1)
         self.app = app
         States.__init__(self)
         self.next = 'game'
@@ -122,6 +188,8 @@ class Start(States):
             elif event.key == pygame.K_e: self.addHorse(1)
             elif event.key == pygame.K_d: self.addHorse(2)
             elif event.key == pygame.K_c: self.addHorse(3)
+            elif event.key == pygame.K_y: self.addHorse(4)
+            elif event.key == pygame.K_h: self.addHorse(5)
 
         if self.numpeople >= config.minpeople:
           if self.timerStarted==False:
@@ -137,12 +205,16 @@ class Start(States):
         if self.time < 0 and self.timerStarted == True:
             self.done = True
 
+      
     def draw(self, screen, dt):
-        screen.blit(self.app.grass, [0,0])
+        self.app.grass.draw(screen, [0,0])
+
         if self.timerStarted == False:
             screen.blit(self.app.title, [0,0])
         if self.timerStarted == True:
-            self.sprite.update(dt, screen)
+            self.sprite.update(dt, screen, 
+                               x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2, 
+                               y=(config.tracksize[1] - self.sprite.image.get_rect()[3])/2)
         for horse in self.app.horses:
             horse.draw(dt, screen, self.numpeople)
 
@@ -154,6 +226,7 @@ class Game(States):
         self.app = app
         States.__init__(self)
         self.next = 'finish'
+
     def startup(self):
         self.timerStarted = False
         self.time = 5
@@ -198,13 +271,17 @@ class Game(States):
             self.done = True
 
     def draw(self, screen, dt):
-        screen.blit(self.app.grass, [0,0])
+        self.app.grass.draw(screen, [0,0])
+
         for horse in self.app.horses:
             horse.draw(dt, screen, -1)
             if horse.done:
                 self.timerStarted = True
         if self.timerStarted == True:
-            self.sprite.update(dt, screen)
+            self.sprite.update(dt, screen, 
+                               x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2, 
+                               y=(config.tracksize[1] - self.sprite.image.get_rect()[3])/2)
+            #self.sprite.update(dt, screen)
 
 class Finish(States):
     def __init__(self, app):
@@ -238,6 +315,7 @@ class Finish(States):
                   
     def update(self, screen, dt):
         self.draw(screen)
+        pygame.display.flip()
 
     def draw(self, screen):
         screen.blit(self.app.results, [0,0])
@@ -270,8 +348,7 @@ class Control:
         self.screen = pygame.display.set_mode(config.screensize, pygame.FULLSCREEN|pygame.DOUBLEBUF)
         self.clock = pygame.time.Clock()
         self.horses = []
-        names = ['Sea Biscuit','Sweeny','Secretariat','Sympatico']
-        for horsenum, name in enumerate(names):
+        for horsenum, name in enumerate(config.horseNames):
           self.horses.append(Horse(horsenum, name))
 
     def setup_states(self, state_dict, start_state):
@@ -311,6 +388,7 @@ class Control:
             img = Image.frombytes('RGB', config.tracksize, data)
             self.matrix.draw(img)
             pygame.display.update()
+            pygame.display.flip()
 
 
 def start():
@@ -337,7 +415,8 @@ def start():
 
   app.title = pygame.image.load(os.path.join(config.imagePath, 'splash.png')).convert_alpha()
   app.results = pygame.image.load(os.path.join(config.imagePath, 'results.png')).convert_alpha()
-  app.grass = pygame.image.load(os.path.join(config.imagePath, 'background_3.png'))
+
+  app.grass = Grass2()
 
   app.setup_states(state_dict, 'start')
   app.main_game_loop()
