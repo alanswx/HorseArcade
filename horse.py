@@ -6,6 +6,8 @@ import pygame
 from PIL import Image
 import AnimatedSprite
 
+import config
+
 x = 0
 y = 0
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
@@ -16,29 +18,16 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
 #    from matrix_null import MatrixScreen
 from matrix_null import MatrixScreen
 
-screenpanels_width =  8
-screenpanels_height =  2
-screenpanel_pixels = 64
-screenwidth = screenpanel_pixels * screenpanels_width
-screenheight = screenpanel_pixels * screenpanels_height
-horseheight = 20
-horsewidth = 32
-finishlinex = 40
-minpeople = 2
 SONG_END = pygame.USEREVENT + 1
-
-imagePath = "images"
-fontPath = "fonts"
-soundPath = "sounds"
 
 class Horse:
     def __init__(self, slotnumber, name):
         self.name = name
         self.slotnumber = slotnumber
 
-        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(imagePath, 'horse_%d' % (slotnumber+1), 'Horse %d-' % (slotnumber+1)),12)
-        self.still = pygame.image.load(os.path.join(imagePath, 'horses_still', 'Horse 0%d.png' % (slotnumber+1)))
-        self.character = pygame.image.load(os.path.join(imagePath, 'horse_%d' % (slotnumber+1), 'Horse Character %d.png' % (slotnumber+1))).convert_alpha()
+        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'horse_%d' % (slotnumber+1), 'Horse %d-' % (slotnumber+1)),12)
+        self.still = pygame.image.load(os.path.join(config.imagePath, 'horses_still', 'Horse 0%d.png' % (slotnumber+1)))
+        self.character = pygame.image.load(os.path.join(config.imagePath, 'horse_%d' % (slotnumber+1), 'Horse Character %d.png' % (slotnumber+1))).convert_alpha()
         self.reset()
         self.hide()
 
@@ -49,8 +38,8 @@ class Horse:
         self.hidden = False
 
     def reset(self):
-        self.x = screenwidth - horsewidth
-        self.y = horseheight * self.slotnumber
+        self.x = config.tracksize[0] - config.horsesize[0]
+        self.y = config.horsesize[1] * self.slotnumber
         self.feet = 0
         self.done = False
         self.hide()
@@ -66,23 +55,23 @@ class Horse:
             screen.blit(self.still, [self.x,self.y])
         elif numpeople == -1:
             self.sprite.update(dt,screen,self.x,self.y)
-            if self.x <= finishlinex:
+            if self.x <= config.finishlinex:
                 self.done = True
                 self.endTime = pygame.time.get_ticks()
 
     def button(self, paw):
         if self.hidden:
             return
-        if self.x > finishlinex:
+        if self.x > config.finishlinex:
             if self.feet == 0:
               if paw == 0:
-                self.x=self.x-horsewidth//4
+                self.x=self.x-config.horsesize[0]//4
                 self.feet=1
             elif self.feet == 1:
               if paw == 1:
-                self.x=self.x-horsewidth//4
+                self.x=self.x-config.horsesize[0]//4
                 self.feet=0
-        elif self.x < finishlinex:
+        elif self.x < config.finishlinex:
             self.timerStarted = False
 
 class States(object):
@@ -94,7 +83,7 @@ class States(object):
 
 class Start(States):
     def __init__(self, app):
-        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(imagePath, 'countdown'),6, 5,offset=-1,animation_time=1)
+        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdown'),6, 5,offset=-1,animation_time=1)
         self.app = app
         States.__init__(self)
         self.next = 'game'
@@ -130,9 +119,9 @@ class Start(States):
             elif event.key == pygame.K_d: self.addHorse(2)
             elif event.key == pygame.K_c: self.addHorse(3)
 
-        if self.numpeople >= minpeople:
+        if self.numpeople >= config.minpeople:
           if self.timerStarted==False:
-            pygame.mixer.music.load(os.path.join(soundPath, 'racestart.ogg'))
+            pygame.mixer.music.load(os.path.join(config.soundPath, 'racestart.ogg'))
             pygame.mixer.music.set_endevent(SONG_END)
             pygame.mixer.music.play(0)
           self.timerStarted = True
@@ -155,8 +144,8 @@ class Start(States):
 
 class Game(States):
     def __init__(self, app):
-        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(imagePath, 'countdownend'), 5, 4, 
-                                                    pygame.image.load(os.path.join(imagePath, 'endgame.png')).convert_alpha(),
+        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdownend'), 5, 4, 
+                                                    pygame.image.load(os.path.join(config.imagePath, 'endgame.png')).convert_alpha(),
                                                     offset=-1,animation_time=1)
         self.app = app
         States.__init__(self)
@@ -171,7 +160,7 @@ class Game(States):
     def get_event(self, event):
           if event.type == SONG_END:
             logging.debug("the song ended!")
-            pygame.mixer.music.load(os.path.join(soundPath, 'horsesounds.ogg'))
+            pygame.mixer.music.load(os.path.join(config.soundPath, 'horsesounds.ogg'))
             pygame.mixer.music.play(0)
 
           if event.type == pygame.JOYBUTTONUP:
@@ -221,7 +210,7 @@ class Finish(States):
 
     def startup(self):
         logging.debug('starting Finish state')
-        pygame.mixer.music.load(os.path.join(soundPath, 'finish.ogg'))
+        pygame.mixer.music.load(os.path.join(config.soundPath, 'finish.ogg'))
         pygame.mixer.music.play(0)
         for horse in self.app.horses:
           dt = horse.endTime - horse.startTime
@@ -259,14 +248,14 @@ class Finish(States):
                     horsecharacter_rect.x = ((col) * 256) + 40
                     horsecharacter_rect.y = ((row) * 32) + 56
                     screen.blit(horsecharacter, horsecharacter_rect)
-                    myfont = pygame.font.SysFont(os.path.join(fontPath, 'Bebas Neue.ttf'), 20)
+                    myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 20)
                     textsurface = myfont.render(str(horse.name), True, (255,255,255))
                     screen.blit(textsurface, (horsecharacter_rect.x + 48, horsecharacter_rect.y+8))
                     if horse.endTime is None:
                         textsurface = myfont.render('DNF', True, (255,255,255))
                         screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
                     else:
-                        textsurface = myfont.render(str(round((horse.endTime-horse.startTime)/1000, 2)), True, (255,255,255))
+                        textsurface = myfont.render(str(round((horse.endTime-horse.startTime)/1000,2)), True, (255,255,255))
                         screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
 
 class Control:
@@ -274,7 +263,7 @@ class Control:
         self.__dict__.update(settings)
         self.done = False
         #self.screen = pygame.display.set_mode(self.size,pygame.FULLSCREEN)
-        self.screen = pygame.display.set_mode((640,480),pygame.FULLSCREEN|pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode(config.screensize, pygame.FULLSCREEN|pygame.DOUBLEBUF)
         self.clock = pygame.time.Clock()
         self.horses = []
         names = ['Sea Biscuit','Sweeny','Secretariat','Sympatico']
@@ -312,17 +301,17 @@ class Control:
             delta_time = self.clock.tick(self.fps)/1000.0
             self.event_loop()
             self.update(delta_time)
-            #self.screen = pygame.transform.scale(self.screen, (screenwidth*2, screenheight*2))
+            #self.screen = pygame.transform.scale(self.screen, (config.tracksize[0]*2, config.tracksize[1]*2))
             surface = pygame.display.get_surface()
             data = pygame.image.tostring(surface,'RGB')
-            img = Image.frombytes('RGB',(screenwidth,screenheight),data)
+            img = Image.frombytes('RGB', config.tracksize, data)
             self.matrix.draw(img)
             pygame.display.update()
 
 
 def start():
   settings = {
-      'size':(screenwidth,screenheight),
+      'size': config.tracksize,
       'fps' :120
   }
 
@@ -342,9 +331,9 @@ def start():
 
   app.matrix = MatrixScreen()
 
-  app.title = pygame.image.load(os.path.join(imagePath, 'splash.png')).convert_alpha()
-  app.results = pygame.image.load(os.path.join(imagePath, 'results.png')).convert_alpha()
-  app.grass = pygame.image.load(os.path.join(imagePath, 'background_3.png'))
+  app.title = pygame.image.load(os.path.join(config.imagePath, 'splash.png')).convert_alpha()
+  app.results = pygame.image.load(os.path.join(config.imagePath, 'results.png')).convert_alpha()
+  app.grass = pygame.image.load(os.path.join(config.imagePath, 'background_3.png'))
 
   app.setup_states(state_dict, 'start')
   app.main_game_loop()
