@@ -6,7 +6,11 @@ import pygame
 from PIL import Image
 import AnimatedSprite
 
-import config
+try:
+  import config
+except ImportError:
+  print ("no config.py found.  Please copy sample_config.py to config.py.")
+  sys.exit(1)
 
 x = 0
 y = 0
