@@ -1,7 +1,7 @@
 from PIL import Image
 import pygame
 
-
+import logging
 
 class AnimatedSprite():
 
@@ -13,11 +13,11 @@ class AnimatedSprite():
             position: x, y coordinate on the screen to place the AnimatedSprite.
             images: Images to use in the animation.
         """
-        print("AnimatedSprite init: "+imagename)
+        logging.debug("AnimatedSprite init: "+imagename)
         self.images = []
         for frameno in range(frames):
              image_frame_name=imagename+str('{0:02d}'.format(frameno+1))+'.png'
-             print("AnimatedSprite loading: "+image_frame_name)
+             logging.debug("AnimatedSprite loading: "+image_frame_name)
              self.images.append(pygame.image.load(image_frame_name).convert_alpha())
         self.index = index
         self.image = self.images[self.index]  # 'image' is the current image of the animation.

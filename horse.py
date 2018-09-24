@@ -1,14 +1,14 @@
+#! /usr/bin/env python3
+
+import os, sys, string, time, logging, argparse
+
 import pygame
-import sys
+from PIL import Image
+import AnimatedSprite
 
 x = 0
 y = 0
-import os
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
-
-
-from PIL import Image
-import AnimatedSprite
 
 #try:
 #    from mf import MatrixScreen
@@ -27,29 +27,38 @@ finishlinex = 40
 minpeople = 2
 SONG_END = pygame.USEREVENT + 1
 
-grass = pygame.image.load('images/background_3.png')
+imagePath = "images"
+fontPath = "fonts"
+soundPath = "sounds"
+
 class Horse:
     def __init__(self, slotnumber, name):
         self.name = name
-        self.sprite=AnimatedSprite.AnimatedSprite('images/horse_'+str(slotnumber+1)+'/Horse '+str(slotnumber+1)+'-',12)
-        self.still = pygame.image.load('images/horses_still/Horse 0'+str(slotnumber +1)+'.png')
         self.slotnumber = slotnumber
-        self.character = pygame.image.load('images/horse_'+str(self.slotnumber + 1)+'/Horse Character '+str(self.slotnumber + 1) +'.png').convert_alpha()
+
+        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(imagePath, 'horse_%d' % (slotnumber+1), 'Horse %d-' % (slotnumber+1)),12)
+        self.still = pygame.image.load(os.path.join(imagePath, 'horses_still', 'Horse 0%d.png' % (slotnumber+1)))
+        self.character = pygame.image.load(os.path.join(imagePath, 'horse_%d' % (slotnumber+1), 'Horse Character %d.png' % (slotnumber+1))).convert_alpha()
         self.reset()
         self.hide()
+
     def hide(self):
         self.hidden = True
+
     def show(self):
         self.hidden = False
+
     def reset(self):
         self.x = screenwidth - horsewidth
         self.y = horseheight * self.slotnumber
         self.feet = 0
         self.done = False
         self.hide()
+
     def reset_time(self):
         self.startTime = pygame.time.get_ticks() # for time logging
         self.endTime = pygame.time.get_ticks()
+
     def draw(self,dt,screen, numpeople):
         if self.hidden:
             return
@@ -60,20 +69,19 @@ class Horse:
             if self.x <= finishlinex:
                 self.done = True
                 self.endTime = pygame.time.get_ticks()
-    def done(self):
-        return self.done
+
     def button(self, paw):
         if self.hidden:
             return
         if self.x > finishlinex:
             if self.feet == 0:
               if paw == 0:
-               self.x=self.x-horsewidth//4
-               self.feet=1
-            if self.feet == 1:
+                self.x=self.x-horsewidth//4
+                self.feet=1
+            elif self.feet == 1:
               if paw == 1:
-               self.x=self.x-horsewidth//4
-               self.feet=0
+                self.x=self.x-horsewidth//4
+                self.feet=0
         elif self.x < finishlinex:
             self.timerStarted = False
 
@@ -86,96 +94,70 @@ class States(object):
 
 class Start(States):
     def __init__(self, app):
-        self.sprite=AnimatedSprite.AnimatedSprite('images/countdown',6, 5,offset=-1,animation_time=1)
+        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(imagePath, 'countdown'),6, 5,offset=-1,animation_time=1)
         self.app = app
         States.__init__(self)
         self.next = 'game'
         self.numpeople = 0
+
     def startup(self):
         self.timerStarted = False
         self.time = 6
         for horse in self.app.horses:
             horse.reset()
         self.numpeople = 0
-        print('starting Start state')
+        logging.debug('starting Start state')
+
+    def addHorse(self, horseid):
+      if self.app.horses[horseid].hidden:
+        self.numpeople += 1
+        logging.debug('Player %d joined' % horseid)
+        logging.debug('There are '+str(self.numpeople)+' people ready')
+      self.app.horses[horseid].show()
+
     def get_event(self, event):
         if event.type == pygame.JOYBUTTONUP:
-            print("Joystick button released.")
-            print(event)
-            if event.button==0:
-                if self.app.horses[0].hidden:
-                    self.numpeople += 1
-                    print('Player 0 joined')
-                    print('There are '+str(self.numpeople)+' people ready')
-                self.app.horses[0].show()
-            if event.button==2:
-                if self.app.horses[1].hidden:
-                    self.numpeople += 1
-                    print('Player 1 joined')
-                    print('There are '+str(self.numpeople)+' people ready')
-                self.app.horses[1].show()
-            if event.button==4:
-                if self.app.horses[2].hidden:
-                    self.numpeople += 1
-                    print('Player 2 joined')
-                    print('There are '+str(self.numpeople)+' people ready')
-                self.app.horses[2].show()
-            if event.button==6:
-                if self.app.horses[3].hidden:
-                    self.numpeople += 1
-                    print('Player 3 joined')
-                    print('There are '+str(self.numpeople)+' people ready')
-                self.app.horses[3].show()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-               self.quit = True
-            if event.key == pygame.K_3:
-                if self.app.horses[0].hidden:
-                    self.numpeople += 1
-                    print('Player 0 joined')
-                    print('There are '+str(self.numpeople)+' people ready')
-                self.app.horses[0].show()
-            if event.key == pygame.K_e:
-                if self.app.horses[1].hidden:
-                    self.numpeople += 1
-                    print('Player 1 joined')
-                    print('There are '+str(self.numpeople)+' people ready')
-                self.app.horses[1].show()
-            if event.key == pygame.K_d:
-                if self.app.horses[2].hidden:
-                    self.numpeople += 1
-                    print('Player 2 joined')
-                    print('There are '+str(self.numpeople)+' people ready')
-                self.app.horses[2].show()
-            if event.key == pygame.K_c:
-                if self.app.horses[3].hidden:
-                    self.numpeople += 1
-                    print('Player 3 joined')
-                    print('There are '+str(self.numpeople)+' people ready')
-                self.app.horses[3].show()
+            logging.debug("Joystick button released.")
+            logging.debug(event)
+            if event.button==0: self.addHorse(0)
+            elif event.button==2: self.addHorse(1)
+            elif event.button==4: self.addHorse(2)
+            elif event.button==6: self.addHorse(3)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE: self.quit = True
+            elif event.key == pygame.K_3: self.addHorse(0)
+            elif event.key == pygame.K_e: self.addHorse(1)
+            elif event.key == pygame.K_d: self.addHorse(2)
+            elif event.key == pygame.K_c: self.addHorse(3)
+
         if self.numpeople >= minpeople:
-                if self.timerStarted==False:
-                    pygame.mixer.music.load('sounds/racestart.ogg')
-                    pygame.mixer.music.set_endevent(SONG_END)
-                    pygame.mixer.music.play(0)
-                self.timerStarted = True
+          if self.timerStarted==False:
+            pygame.mixer.music.load(os.path.join(soundPath, 'racestart.ogg'))
+            pygame.mixer.music.set_endevent(SONG_END)
+            pygame.mixer.music.play(0)
+          self.timerStarted = True
+
     def update(self, screen, dt):
         self.draw(screen, dt)
         if self.timerStarted == True:
             self.time = self.time - dt
         if self.time < 0 and self.timerStarted == True:
             self.done = True
+
     def draw(self, screen, dt):
-        screen.blit(grass, [0,0])
+        screen.blit(self.app.grass, [0,0])
         if self.timerStarted == False:
-            screen.blit(title, [0,0])
+            screen.blit(self.app.title, [0,0])
         if self.timerStarted == True:
             self.sprite.update(dt, screen)
         for horse in self.app.horses:
             horse.draw(dt, screen, self.numpeople)
+
 class Game(States):
     def __init__(self, app):
-        self.sprite=AnimatedSprite.AnimatedSprite('images/countdownend', 5, 4, pygame.image.load('images/endgame.png').convert_alpha(),offset=-1,animation_time=1)
+        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(imagePath, 'countdownend'), 5, 4, 
+                                                    pygame.image.load(os.path.join(imagePath, 'endgame.png')).convert_alpha(),
+                                                    offset=-1,animation_time=1)
         self.app = app
         States.__init__(self)
         self.next = 'finish'
@@ -184,153 +166,147 @@ class Game(States):
         self.time = 5
         for horse in self.app.horses:
             horse.reset_time()
-        print('starting Game state')
+        logging.debug('starting Game state')
 
     def get_event(self, event):
           if event.type == SONG_END:
-            print("the song ended!")
-            pygame.mixer.music.load('sounds/horsesounds.ogg')
+            logging.debug("the song ended!")
+            pygame.mixer.music.load(os.path.join(soundPath, 'horsesounds.ogg'))
             pygame.mixer.music.play(0)
 
           if event.type == pygame.JOYBUTTONUP:
-            print("Joystick button released.")
-            print(event)
-            if event.button==0:
-                  self.app.horses[0].button(0)
-            if event.button==1:
-                  self.app.horses[0].button(1)
-            if event.button==2:
-                  self.app.horses[1].button(0)
-            if event.button==3:
-                  self.app.horses[1].button(1)
-            if event.button==4:
-                  self.app.horses[2].button(0)
-            if event.button==5:
-                  self.app.horses[2].button(1)
-            if event.button==6:
-                  self.app.horses[3].button(0)
-            if event.button==7:
-                  self.app.horses[3].button(1)
-          if event.type == pygame.KEYDOWN:
-               if event.key == pygame.K_1:
-                  self.app.horses[0].button(0)
-               if event.key == pygame.K_2:
-                  self.app.horses[0].button(1)
-               if event.key == pygame.K_q:
-                  self.app.horses[1].button(0)
-               if event.key == pygame.K_w:
-                  self.app.horses[1].button(1)
-               if event.key == pygame.K_a:
-                  self.app.horses[2].button(0)
-               if event.key == pygame.K_s:
-                  self.app.horses[2].button(1)
-               if event.key == pygame.K_z:
-                  self.app.horses[3].button(0)
-               if event.key == pygame.K_x:
-                  self.app.horses[3].button(1)
-               if event.key == pygame.K_ESCAPE:
-                  self.quit = True
+            logging.debug("Joystick button released.")
+            logging.debug(event)
+            if   event.button==0: self.app.horses[0].button(0)
+            elif event.button==1: self.app.horses[0].button(1)
+            elif event.button==2: self.app.horses[1].button(0)
+            elif event.button==3: self.app.horses[1].button(1)
+            elif event.button==4: self.app.horses[2].button(0)
+            elif event.button==5: self.app.horses[2].button(1)
+            elif event.button==6: self.app.horses[3].button(0)
+            elif event.button==7: self.app.horses[3].button(1)
+          elif event.type == pygame.KEYDOWN:
+            if   event.key == pygame.K_1: self.app.horses[0].button(0)
+            elif event.key == pygame.K_2: self.app.horses[0].button(1)
+            elif event.key == pygame.K_q: self.app.horses[1].button(0)
+            elif event.key == pygame.K_w: self.app.horses[1].button(1)
+            elif event.key == pygame.K_a: self.app.horses[2].button(0)
+            elif event.key == pygame.K_s: self.app.horses[2].button(1)
+            elif event.key == pygame.K_z: self.app.horses[3].button(0)
+            elif event.key == pygame.K_x: self.app.horses[3].button(1)
+            elif event.key == pygame.K_ESCAPE:
+              self.quit = True
+
     def update(self, screen, dt):
         self.draw(screen, dt)
         if self.timerStarted == True:
             self.time = self.time - dt
         if self.time < 0 and self.timerStarted == True:
             self.done = True
+
     def draw(self, screen, dt):
-        screen.blit(grass, [0,0])
+        screen.blit(self.app.grass, [0,0])
         for horse in self.app.horses:
             horse.draw(dt, screen, -1)
             if horse.done:
                 self.timerStarted = True
         if self.timerStarted == True:
             self.sprite.update(dt, screen)
+
 class Finish(States):
     def __init__(self, app):
         self.app = app
         States.__init__(self)
         self.next = 'start'
+
     def startup(self):
-        print('starting Finish state')
-        pygame.mixer.music.load('sounds/finish.ogg')
+        logging.debug('starting Finish state')
+        pygame.mixer.music.load(os.path.join(soundPath, 'finish.ogg'))
         pygame.mixer.music.play(0)
         for horse in self.app.horses:
-            print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)) #printing timings
-            if horse.endTime - horse.startTime == 0:
-                horse.endTime = horse.startTime+9999999
+          dt = horse.endTime - horse.startTime
+          logging.info("%d: %.3f" % ((horse.slotnumber+1), dt))
+          if dt == 0:
+            horse.endTime = None
         self.sortedlist = self.app.horses.copy()
-        self.sortedList=sorted(self.sortedlist, key=lambda horse: (horse.endTime,horse.x))
+        self.sortedList = sorted(self.sortedlist, key=lambda horse: (horse.endTime == None, horse.endTime, horse.x))
+
     def get_event(self, event):
         if event.type == pygame.JOYBUTTONUP:
-            print("Joystick button released.")
-            print(event)
-            if event.button==0:
-               self.done = True
-        if event.type == pygame.MOUSEBUTTONDOWN:
+          logging.debug("Joystick button released.")
+          logging.debug(event)
+          if event.button in (0,2,4,6):
             self.done = True
-        if event.type == pygame.KEYDOWN:
-               if event.key == pygame.K_1:
-                  self.done = True
-               if event.key == pygame.K_ESCAPE:
-                  self.quit = True
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+          self.done = True
+        elif event.type == pygame.KEYDOWN:
+          if event.key in (pygame.K_1, pygame.K_q, pygame.K_a, pygame.K_z): self.done = True
+          elif event.key == pygame.K_ESCAPE: self.quit = True
+                  
     def update(self, screen, dt):
         self.draw(screen)
+
     def draw(self, screen):
-        screen.blit(results, [0,0])
+        screen.blit(self.app.results, [0,0])
         for col in range(2):
             for row in range(2):
                 horse=self.sortedList[col*2+row]
                 if not horse.hidden:
-                    #print((col,row))
-                    #print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)+' '+str(horse.x))
+                    #logging.debug((col,row))
+                    #logging.debug(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime)/1000)+' '+str(horse.x))
                     horsecharacter = horse.character
                     horsecharacter_rect = horsecharacter.get_rect()
                     horsecharacter_rect.x = ((col) * 256) + 40
                     horsecharacter_rect.y = ((row) * 32) + 56
                     screen.blit(horsecharacter, horsecharacter_rect)
-                    myfont = pygame.font.SysFont('fonts/Bebas Neue.ttf', 20)
+                    myfont = pygame.font.SysFont(os.path.join(fontPath, 'Bebas Neue.ttf'), 20)
                     textsurface = myfont.render(str(horse.name), True, (255,255,255))
                     screen.blit(textsurface, (horsecharacter_rect.x + 48, horsecharacter_rect.y+8))
-                    if horse.endTime < 9000000:
-                        myfont = pygame.font.SysFont('fonts/Bebas Neue.ttf', 20)
-                        textsurface = myfont.render(str(round((horse.endTime-horse.startTime)/1000 ,2)), True, (255,255,255))
-                        screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
-                    else:
-                        myfont = pygame.font.SysFont('fonts/Bebas Neue.ttf', 20)
+                    if horse.endTime is None:
                         textsurface = myfont.render('DNF', True, (255,255,255))
                         screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
+                    else:
+                        textsurface = myfont.render(str(round((horse.endTime-horse.startTime)/1000, 2)), True, (255,255,255))
+                        screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
+
 class Control:
     def __init__(self, **settings):
         self.__dict__.update(settings)
         self.done = False
         #self.screen = pygame.display.set_mode(self.size,pygame.FULLSCREEN)
-        self.screen = pygame.display.set_mode((640,480),pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((640,480),pygame.FULLSCREEN|pygame.DOUBLEBUF)
         self.clock = pygame.time.Clock()
         self.horses = []
         names = ['Sea Biscuit','Sweeny','Secretariat','Sympatico']
-        for horsenum in range(4):
-            self.horses.append(Horse(horsenum, names[horsenum]))
+        for horsenum, name in enumerate(names):
+          self.horses.append(Horse(horsenum, name))
+
     def setup_states(self, state_dict, start_state):
         self.state_dict = state_dict
         self.state_name = start_state
         self.state = self.state_dict[self.state_name]
         self.state.startup()
+
     def flip_state(self):
         self.state.done = False
         previous,self.state_name = self.state_name, self.state.next
         self.state = self.state_dict[self.state_name]
         self.state.startup()
         self.state.previous = previous
+
     def update(self, dt):
         if self.state.quit:
             self.done = True
         elif self.state.done:
             self.flip_state()
         self.state.update(self.screen, dt)
+
     def event_loop(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.done = True
             self.state.get_event(event)
+
     def main_game_loop(self):
         while not self.done:
             delta_time = self.clock.tick(self.fps)/1000.0
@@ -340,31 +316,76 @@ class Control:
             surface = pygame.display.get_surface()
             data = pygame.image.tostring(surface,'RGB')
             img = Image.frombytes('RGB',(screenwidth,screenheight),data)
-            matrix.draw(img)
+            self.matrix.draw(img)
             pygame.display.update()
 
-settings = {
-    'size':(screenwidth,screenheight),
-    'fps' :120
-}
 
-app = Control(**settings)
-state_dict = {
-    'start': Start(app),
-    'game': Game(app),
-    'finish':Finish(app)
-}
-pygame.init()
-pygame.joystick.init()
-joystick_count = pygame.joystick.get_count()
-for i in range(joystick_count):
-        joystick = pygame.joystick.Joystick(i)
-        joystick.init()
+def start():
+  settings = {
+      'size':(screenwidth,screenheight),
+      'fps' :120
+  }
 
-matrix = MatrixScreen()
-title = pygame.image.load('images/splash.png').convert_alpha()
-results = pygame.image.load('images/results.png').convert_alpha()
-app.setup_states(state_dict, 'start')
-app.main_game_loop()
-pygame.quit()
-sys.exit()
+  app = Control(**settings)
+  state_dict = {
+      'start': Start(app),
+      'game': Game(app),
+      'finish':Finish(app)
+  }
+
+  pygame.init()
+  pygame.joystick.init()
+  joystick_count = pygame.joystick.get_count()
+  for i in range(joystick_count):
+    joystick = pygame.joystick.Joystick(i)
+    joystick.init()
+
+  app.matrix = MatrixScreen()
+
+  app.title = pygame.image.load(os.path.join(imagePath, 'splash.png')).convert_alpha()
+  app.results = pygame.image.load(os.path.join(imagePath, 'results.png')).convert_alpha()
+  app.grass = pygame.image.load(os.path.join(imagePath, 'background_3.png'))
+
+  app.setup_states(state_dict, 'start')
+  app.main_game_loop()
+  pygame.quit()
+
+
+def parse_args(argv):
+  parser = argparse.ArgumentParser(
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    description=__doc__)
+
+  parser.add_argument("-t", "--test", dest="test_flag", 
+                    default=False,
+                    action="store_true",
+                    help="Run test function")
+  parser.add_argument("--log-level", type=str,
+                      choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                      help="Desired console log level")
+  parser.add_argument("-d", "--debug", dest="log_level", action="store_const",
+                      const="DEBUG",
+                      help="Activate debugging")
+  parser.add_argument("-q", "--quiet", dest="log_level", action="store_const",
+                      const="CRITICAL",
+                      help="Quite mode")
+  #parser.add_argument("files", type=str, nargs='+')
+
+  args = parser.parse_args(argv[1:])
+
+  return parser, args
+
+def main(argv, stdout, environ):
+  if sys.version_info < (3, 0): reload(sys); sys.setdefaultencoding('utf8')
+
+  parser, args = parse_args(argv)
+
+  logging.basicConfig(format="[%(asctime)s] %(levelname)-8s %(message)s", 
+                    datefmt="%m/%d %H:%M:%S", level=args.log_level)
+
+  if args.test_flag:  test();   return
+
+  start()
+
+if __name__ == "__main__":
+  main(sys.argv, sys.stdout, os.environ)
