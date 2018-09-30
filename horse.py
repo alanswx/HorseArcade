@@ -35,11 +35,8 @@ class Horse:
         self.character = pygame.image.load(os.path.join(horsePath, 'face.png')).convert_alpha()
         self.reset()
 
-    def hide(self):
-        self.hidden = True
-
-    def show(self):
-        self.hidden = False
+    def hide(self): self.hidden = True
+    def show(self): self.hidden = False
 
     def reset(self):
         self.x = config.tracksize[0] - config.horsesize[0]
@@ -53,7 +50,7 @@ class Horse:
 
     def reset_time(self):
         self.startTime = time.time()
-        self.endTime = time.time()
+        self.endTime = None
 
     def draw(self, screen, dt):
       if self.hidden: return
@@ -200,14 +197,14 @@ class Start(States):
             self.done = True
       
     def draw(self, screen, dt):
+      if self.timerStarted == False:
+        screen.blit(self.app.title, [(config.tracksize[0] - self.app.title.get_rect()[2])/2, 
+                                     (config.tracksize[1] - self.app.title.get_rect()[3])/2])
+      else:
         self.app.grass.draw(screen, [0,0])
-
-        if self.timerStarted == False:
-            screen.blit(self.app.title, [0,0])
-        if self.timerStarted == True:
-            self.sprite.update(dt, screen, 
-                               x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2, 
-                               y=(config.tracksize[1] - self.sprite.image.get_rect()[3])/2)
+        self.sprite.update(dt, screen, 
+                           x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2, 
+                           y=(config.tracksize[1] - self.sprite.image.get_rect()[3])/2)
         for horse in self.app.horses():
           horse.draw(screen, dt)
 
@@ -302,12 +299,6 @@ class Finish(States):
 
         self.showTimer = time.time()
 
-        for horse in self.app.horses():
-          dt = horse.endTime - horse.startTime
-          logging.info("%d: %.3f" % ((horse.slotnumber+1), dt))
-##           if dt == 0:
-##             horse.endTime = None
-
     def get_event(self, event):
         if event.type == pygame.JOYBUTTONUP:
           logging.debug("Joystick button released.")
@@ -328,7 +319,7 @@ class Finish(States):
                   
     def update(self, screen, dt):
         self.draw(screen)
-        pygame.display.flip()
+        #pygame.display.flip()
 
     def draw(self, screen):
         sortedList = sorted(self.app.horses(), key=lambda horse: (not horse.done, horse.endTime-horse.startTime, horse.x))
@@ -339,8 +330,6 @@ class Finish(States):
           row = place % 2
           col = place // 2
 
-          #logging.debug((col,row))
-          #logging.debug(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime))+' '+str(horse.x))
           horsecharacter = horse.character
           horsecharacter_rect = horsecharacter.get_rect()
           horsecharacter_rect.x = ((col) * 256) + 40
@@ -358,10 +347,14 @@ class Finish(States):
               textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (255,255,255))
               screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
 
-class Control:
+class HorseApp:
     def __init__(self, **settings):
         self.__dict__.update(settings)
         self.done = False
+        self.state = None
+        self.state_name = None
+        self.state_dict = None
+
         #self.screen = pygame.display.set_mode(self.size,pygame.FULLSCREEN)
         self.screen = pygame.display.set_mode(config.screensize, pygame.FULLSCREEN|pygame.DOUBLEBUF)
         self.clock = pygame.time.Clock()
@@ -422,10 +415,11 @@ class Control:
             self.event_loop()
             self.update(delta_time)
             #self.screen = pygame.transform.scale(self.screen, (config.tracksize[0]*2, config.tracksize[1]*2))
-            surface = pygame.display.get_surface()
-            data = pygame.image.tostring(surface,'RGB')
-            img = Image.frombytes('RGB', config.tracksize, data)
-            self.matrix.draw(img)
+            if 0:
+              surface = pygame.display.get_surface()
+              data = pygame.image.tostring(surface,'RGB')
+              img = Image.frombytes('RGB', config.tracksize, data)
+              self.matrix.draw(img)
             pygame.display.update()
             pygame.display.flip()
 
@@ -433,14 +427,14 @@ class Control:
 def start():
   settings = {
       'size': config.tracksize,
-      'fps' :120
+      'fps' : 30
   }
 
-  app = Control(**settings)
+  app = HorseApp(**settings)
   state_dict = {
-      'start': Start(app),
-      'game': Game(app),
-      'finish':Finish(app)
+      'start':  Start(app),
+      'game':   Game(app),
+      'finish': Finish(app)
   }
 
   pygame.init()
