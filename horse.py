@@ -103,13 +103,13 @@ class Grass2:
     hgreens = []
     greens.append((142, 252, 3)) ## first
     hgreens.append((26, 223, 1))
-    
+
     greens.append((33, 223, 1))
     hgreens.append((48, 227, 2))
 
     greens.append((114, 244, 14))
     hgreens.append((59, 227, 34))
-    
+
     greens.append((33, 223, 1))  ## extra
     hgreens.append((48, 227, 2))
 
@@ -126,7 +126,7 @@ class Grass2:
 
 
     screen.blit(self.uppertrack, [x, y])
-    if self.uppertrack.get_size()[0]+x < config.tracksize[0]: 
+    if self.uppertrack.get_size()[0]+x < config.tracksize[0]:
       screen.blit(self.uppertrack, [self.uppertrack.get_size()[0]+x, y])
 
     screen.blit(self.wheel, [x+15, y+11])
@@ -143,7 +143,7 @@ class Grass2:
 
     y -= 2
     screen.blit(self.lowertrack, [pos[0], y])
-    if self.lowertrack.get_size()[0]+x < config.tracksize[0]: 
+    if self.lowertrack.get_size()[0]+x < config.tracksize[0]:
       screen.blit(self.lowertrack, [self.lowertrack.get_size()[0]+pos[0], y])
     screen.blit(self.wheel, [x+15, y - 8])
 
@@ -155,16 +155,44 @@ class States(object):
         self.quit = False
         self.previous = None
 
-class Start(States):
+class Splash(States):
     def __init__(self, app):
-        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdown'), 6, 5,offset=-1,animation_time=1)
         self.app = app
         States.__init__(self)
-        self.next = 'game'
+        self.next = 'start'
+
+    def startup(self):
+        logging.debug('starting Splash state')
+        self.timerStarted = True
+        self.time = 3
+
+    def get_event(self, event):
+        if event.type == pygame.JOYBUTTONUP:
+          logging.debug("Joystick button released.")
+          logging.debug(event)
+        elif event.type == pygame.KEYDOWN:
+          if event.key == pygame.K_ESCAPE: self.quit = True
+
+
+    def update(self, screen, dt):
+        self.draw(screen, dt)
+        if self.timerStarted == True:
+            self.time = self.time - dt
+        if self.time < 0 and self.timerStarted == True:
+            self.done = True
+
+    def draw(self, screen, dt):
+            screen.blit(self.app.title, [0,0])
+
+class Start(States):
+    def __init__(self, app):
+        self.app = app
+        States.__init__(self)
+        self.next = 'countdown'
 
     def startup(self):
         self.timerStarted = False
-        self.time = 6
+        self.time = 3
         self.app.resetHorses()
         logging.debug('starting Start state')
 
@@ -191,6 +219,8 @@ class Start(States):
             pygame.mixer.music.set_endevent(SONG_END)
             pygame.mixer.music.play(0)
           self.timerStarted = True
+        if self.app.numPeople() == len(config.horseNames):
+            self.done = True
 
     def update(self, screen, dt):
         self.draw(screen, dt)
@@ -198,22 +228,50 @@ class Start(States):
             self.time = self.time - dt
         if self.time < 0 and self.timerStarted == True:
             self.done = True
-      
+
     def draw(self, screen, dt):
         self.app.grass.draw(screen, [0,0])
+        for horse in self.app.horses():
+          horse.draw(screen, dt)
+class CountDown(States):
+    def __init__(self, app):
+        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdown'), 6, 5,offset=-1,animation_time=1)
+        self.app = app
+        States.__init__(self)
+        self.next = 'game'
 
-        if self.timerStarted == False:
-            screen.blit(self.app.title, [0,0])
+    def startup(self):
+        self.timerStarted = True
+        self.time = 6
+        logging.debug('starting Countdown state')
+        pygame.mixer.music.load(os.path.join(config.soundPath, 'racestart.ogg'))
+        pygame.mixer.music.set_endevent(SONG_END)
+        pygame.mixer.music.play(0)
+
+    def get_event(self, event):
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE: self.quit = True
+
+    def update(self, screen, dt):
+        self.draw(screen, dt)
         if self.timerStarted == True:
-            self.sprite.update(dt, screen, 
-                               x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2, 
-                               y=(config.tracksize[1] - self.sprite.image.get_rect()[3])/2)
+            self.time = self.time - dt
+        if self.time < 0 and self.timerStarted == True:
+            self.done = True
+
+    def draw(self, screen, dt):
+        self.app.grass.draw(screen, [0,0])
+        if self.timerStarted == True:
+            self.sprite.update(dt, screen,
+                           x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2,
+                           y=(config.tracksize[1] - self.sprite.image.get_rect()[3])/2)
         for horse in self.app.horses():
           horse.draw(screen, dt)
 
 class Game(States):
     def __init__(self, app):
-        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdownend'), 5, 4, 
+        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdownend'), 5, 4,
                                                     pygame.image.load(os.path.join(config.imagePath, 'endgame.png')).convert_alpha(),
                                                     offset=-1,animation_time=1)
         self.app = app
@@ -283,15 +341,15 @@ class Game(States):
         for horse in horses: horse.draw(screen, dt)
 
         if self.timerStarted == True:
-          self.sprite.update(dt, screen, 
-                             x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2, 
+          self.sprite.update(dt, screen,
+                             x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2,
                              y=(config.tracksize[1] - self.sprite.image.get_rect()[3])/2)
 
 class Finish(States):
     def __init__(self, app):
         self.app = app
         States.__init__(self)
-        self.next = 'start'
+        self.next = 'splash'
 
         self.showTimer = None
 
@@ -317,7 +375,7 @@ class Finish(States):
         elif event.type == pygame.MOUSEBUTTONDOWN:
           self.markDone()
         elif event.type == pygame.KEYDOWN:
-          if event.key in (pygame.K_1, pygame.K_q, pygame.K_a, pygame.K_z): 
+          if event.key in (pygame.K_1, pygame.K_q, pygame.K_a, pygame.K_z):
             self.markDone()
           elif event.key == pygame.K_ESCAPE: self.quit = True
 
@@ -325,7 +383,75 @@ class Finish(States):
       dt = time.time() - self.showTimer
       if dt > 5:
         self.done = True
-                  
+
+    def update(self, screen, dt):
+        self.draw(screen)
+        pygame.display.flip()
+
+    def draw(self, screen):
+        sortedList = sorted(self.app.horses(), key=lambda horse: (not horse.done, horse.endTime-horse.startTime, horse.x))
+
+        screen.blit(self.app.results2, [0,0])
+
+        for place, horse in enumerate(sortedList):
+
+          #logging.debug((col,row))
+          #logging.debug(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime))+' '+str(horse.x))
+          horsecharacter = horse.character
+          horsecharacter_rect = horsecharacter.get_rect()
+          horsecharacter_rect.x = ((horse.slotnumber) * 128)-64
+          horsecharacter_rect.y = 64
+
+          screen.blit(horsecharacter, horsecharacter_rect)
+
+          myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 20)
+          textsurface = myfont.render(str(horse.name), True, (255,255,255))
+          screen.blit(textsurface, (horsecharacter_rect.x + 48, horsecharacter_rect.y+32))
+          if not horse.done:
+              textsurface = myfont.render('DNF', True, (255,255,255))
+              screen.blit(textsurface, (horsecharacter_rect.x + 32, horsecharacter_rect.y+32))
+          else:
+              textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (255,255,255))
+              screen.blit(textsurface, (horsecharacter_rect.x + 32, horsecharacter_rect.y+32))
+class Finish2(States):
+    def __init__(self, app):
+        self.app = app
+        States.__init__(self)
+        self.next = 'splash'
+
+        self.showTimer = None
+
+    def startup(self):
+        logging.debug('starting Finish2 state')
+        pygame.mixer.music.load(os.path.join(config.soundPath, 'finish.ogg'))
+        pygame.mixer.music.play(0)
+
+        self.showTimer = time.time()
+
+        for horse in self.app.horses():
+          dt = horse.endTime - horse.startTime
+          logging.info("%d: %.3f" % ((horse.slotnumber+1), dt))
+##           if dt == 0:
+##             horse.endTime = None
+
+    def get_event(self, event):
+        if event.type == pygame.JOYBUTTONUP:
+          logging.debug("Joystick button released.")
+          logging.debug(event)
+          if event.button in (0,2,4,6):
+            self.markDone()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+          self.markDone()
+        elif event.type == pygame.KEYDOWN:
+          if event.key in (pygame.K_1, pygame.K_q, pygame.K_a, pygame.K_z):
+            self.markDone()
+          elif event.key == pygame.K_ESCAPE: self.quit = True
+
+    def markDone(self):
+      dt = time.time() - self.showTimer
+      if dt > 5:
+        self.done = True
+
     def update(self, screen, dt):
         self.draw(screen)
         pygame.display.flip()
@@ -438,7 +564,9 @@ def start():
 
   app = Control(**settings)
   state_dict = {
+      'splash': Splash(app),
       'start': Start(app),
+      'countdown': CountDown(app),
       'game': Game(app),
       'finish':Finish(app)
   }
@@ -453,11 +581,12 @@ def start():
   app.matrix = MatrixScreen()
 
   app.title = pygame.image.load(os.path.join(config.imagePath, 'splash.png')).convert_alpha()
+  app.results2 = pygame.image.load(os.path.join(config.imagePath, 'results2.png')).convert_alpha()
   app.results = pygame.image.load(os.path.join(config.imagePath, 'results.png')).convert_alpha()
 
   app.grass = Grass2()
 
-  app.setup_states(state_dict, 'start')
+  app.setup_states(state_dict, 'splash')
   app.main_game_loop()
   pygame.quit()
 
@@ -467,7 +596,7 @@ def parse_args(argv):
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     description=__doc__)
 
-  parser.add_argument("-t", "--test", dest="test_flag", 
+  parser.add_argument("-t", "--test", dest="test_flag",
                     default=False,
                     action="store_true",
                     help="Run test function")
@@ -491,7 +620,7 @@ def main(argv, stdout, environ):
 
   parser, args = parse_args(argv)
 
-  logging.basicConfig(format="[%(asctime)s] %(levelname)-8s %(message)s", 
+  logging.basicConfig(format="[%(asctime)s] %(levelname)-8s %(message)s",
                     datefmt="%m/%d %H:%M:%S", level=args.log_level)
 
   if args.test_flag:  test();   return
