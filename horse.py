@@ -397,22 +397,20 @@ class Finish(States):
 
           #logging.debug((col,row))
           #logging.debug(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime))+' '+str(horse.x))
-          horsecharacter = horse.character
-          horsecharacter_rect = horsecharacter.get_rect()
-          horsecharacter_rect.x = ((horse.slotnumber) * 128)-64
-          horsecharacter_rect.y = 64
+          ribbon = self.app.ribbon[place-1]
+          ribbon_rect = ribbon.get_rect()
+          ribbon_rect.x = ((horse.slotnumber+1) * 128)
+          ribbon_rect.y = 64
 
-          screen.blit(horsecharacter, horsecharacter_rect)
+          screen.blit(ribbon, ribbon_rect)
 
           myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 20)
-          textsurface = myfont.render(str(horse.name), True, (255,255,255))
-          screen.blit(textsurface, (horsecharacter_rect.x + 48, horsecharacter_rect.y+32))
           if not horse.done:
-              textsurface = myfont.render('DNF', True, (255,255,255))
-              screen.blit(textsurface, (horsecharacter_rect.x + 32, horsecharacter_rect.y+32))
+              textsurface = myfont.render('DNF', True, (0,0,0))
+              screen.blit(textsurface, (ribbon_rect.x + 32, ribbon_rect.y))
           else:
-              textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (255,255,255))
-              screen.blit(textsurface, (horsecharacter_rect.x + 32, horsecharacter_rect.y+32))
+              textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (0,0,0))
+              screen.blit(textsurface, (ribbon_rect.x + 32, ribbon_rect.y))
 class Finish2(States):
     def __init__(self, app):
         self.app = app
@@ -583,6 +581,11 @@ def start():
   app.title = pygame.image.load(os.path.join(config.imagePath, 'splash.png')).convert_alpha()
   app.results2 = pygame.image.load(os.path.join(config.imagePath, 'results2.png')).convert_alpha()
   app.results = pygame.image.load(os.path.join(config.imagePath, 'results.png')).convert_alpha()
+  app.ribbon = [
+   pygame.image.load(os.path.join(config.imagePath, 'ribbons/ribbon1.png')).convert_alpha(),
+   pygame.image.load(os.path.join(config.imagePath, 'ribbons/ribbon2.png')).convert_alpha(),
+   pygame.image.load(os.path.join(config.imagePath, 'ribbons/ribbon3.png')).convert_alpha(),
+   pygame.image.load(os.path.join(config.imagePath,'ribbons/ribbon4.png')).convert_alpha()]
 
   app.grass = Grass2()
 
