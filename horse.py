@@ -397,20 +397,23 @@ class Finish(States):
 
           #logging.debug((col,row))
           #logging.debug(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime))+' '+str(horse.x))
-          ribbon = self.app.ribbon[place-1]
+          #print(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime))+' '+str(horse.x))
+          #print(horse.name,place)
+          ribbon = self.app.ribbon[place]
           ribbon_rect = ribbon.get_rect()
-          ribbon_rect.x = ((horse.slotnumber+1) * 128)
-          ribbon_rect.y = 64
+          ribbon_rect.x = ((horse.slotnumber) * 128)+64-ribbon_rect.width/2
+          ribbon_rect.y = 58
+          #print(ribbon_rect)
 
           screen.blit(ribbon, ribbon_rect)
 
           myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 20)
           if not horse.done:
               textsurface = myfont.render('DNF', True, (0,0,0))
-              screen.blit(textsurface, (ribbon_rect.x + 32, ribbon_rect.y))
+              screen.blit(textsurface, (ribbon_rect.x, ribbon_rect.y+56))
           else:
               textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (0,0,0))
-              screen.blit(textsurface, (ribbon_rect.x + 32, ribbon_rect.y))
+              screen.blit(textsurface, (ribbon_rect.x, ribbon_rect.y+56))
 class Finish2(States):
     def __init__(self, app):
         self.app = app
@@ -577,7 +580,7 @@ def start():
     joystick.init()
 
   app.matrix = MatrixScreen()
-
+  pygame.mouse.set_visible(False)
   app.title = pygame.image.load(os.path.join(config.imagePath, 'splash.png')).convert_alpha()
   app.results2 = pygame.image.load(os.path.join(config.imagePath, 'results2.png')).convert_alpha()
   app.results = pygame.image.load(os.path.join(config.imagePath, 'results.png')).convert_alpha()
