@@ -62,6 +62,7 @@ class Horse:
 
         self.startTime = None
         self.endTime = None
+        self.setLEDs()
 
     def reset_time(self):
         self.startTime = time.time()
@@ -79,6 +80,18 @@ class Horse:
             self.done = True
             self.endTime = time.time()
 
+    def setLEDs(self):
+        if self.x > config.finishlinex:
+             GPIO.output(self.leds[0],0)
+             GPIO.output(self.leds[1],0)
+       else:
+          if (self.feet==0):
+             GPIO.output(self.leds[1],0)
+             GPIO.output(self.leds[0],1)
+          else:
+             GPIO.output(self.leds[0],0)
+             GPIO.output(self.leds[1],1)
+
     def button(self, paw):
         if self.hidden:
             return
@@ -86,18 +99,14 @@ class Horse:
             if self.feet == 0:
               if paw == 0:
                 self.x=self.x-config.horsesize[0]//4
-                GPIO.output(self.leds[0],0)
-                GPIO.output(self.leds[1],1)
                 self.feet=1
             elif self.feet == 1:
               if paw == 1:
                 self.x=self.x-config.horsesize[0]//4
-                GPIO.output(self.leds[0],1)
-                GPIO.output(self.leds[1],0)
                 self.feet=0
         elif self.x < config.finishlinex:
             self.timerStarted = False
-
+        self.setLEDs()
 class Grass:
   def __init__(self):
     self.grass = pygame.image.load(os.path.join(config.imagePath, 'background_3.png'))
