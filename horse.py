@@ -81,10 +81,12 @@ class Horse:
             self.endTime = time.time()
 
     def setLEDs(self):
+        print('setLEDs')
         if self.x > config.finishlinex:
              GPIO.output(self.leds[0],0)
              GPIO.output(self.leds[1],0)
-       else:
+             print('setLEDs: self.x < config.finishlinex',self.x,config.finishlinex)
+        else:
           if (self.feet==0):
              GPIO.output(self.leds[1],0)
              GPIO.output(self.leds[0],1)
