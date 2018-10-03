@@ -7,27 +7,39 @@ from PIL import Image
 import AnimatedSprite
 
 try:
+  import RPi.GPIO as GPIO
+except:
+  import nullgpio as GPIO
+
+
+
+try:
   import config
 except ImportError:
   print ("no config.py found.  Please copy sample_config.py to config.py.")
   sys.exit(1)
 
+#
+# Setup GPIO pins for LEDs
+#
+GPIO.setmode(GPIO.BCM)
+for io in config.horseLeds:
+  GPIO.setup(io,GPIO.OUT)
+
+
+
 x = 0
 y = 0
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
 
-#try:
-#    from mf import MatrixScreen
-#except ImportError:
-#    from matrix_null import MatrixScreen
-from matrix_null import MatrixScreen
 
 SONG_END = pygame.USEREVENT + 1
 
 class Horse:
-    def __init__(self, slotnumber, name):
+    def __init__(self, slotnumber, name,leds):
         self.name = name
         self.slotnumber = slotnumber
+        self.leds = leds
 
         horsePath = os.path.join(config.imagePath, 'horse_%d' % (slotnumber+1))
         self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(horsePath, 'frame'), 12)
@@ -74,10 +86,14 @@ class Horse:
             if self.feet == 0:
               if paw == 0:
                 self.x=self.x-config.horsesize[0]//4
+                GPIO.output(self.leds[0],0)
+                GPIO.output(self.leds[1],1)
                 self.feet=1
             elif self.feet == 1:
               if paw == 1:
                 self.x=self.x-config.horsesize[0]//4
+                GPIO.output(self.leds[0],1)
+                GPIO.output(self.leds[1],0)
                 self.feet=0
         elif self.x < config.finishlinex:
             self.timerStarted = False
@@ -495,7 +511,7 @@ class Control:
         self._horses = []
 
         for horsenum, name in enumerate(config.horseNames):
-          self._horses.append(Horse(horsenum, name))
+          self._horses.append(Horse(horsenum, name,config.horseLeds[horsenum]))
 
     def setup_states(self, state_dict, start_state):
         self.state_dict = state_dict
@@ -549,10 +565,10 @@ class Control:
             self.event_loop()
             self.update(delta_time)
             #self.screen = pygame.transform.scale(self.screen, (config.tracksize[0]*2, config.tracksize[1]*2))
-            surface = pygame.display.get_surface()
-            data = pygame.image.tostring(surface,'RGB')
-            img = Image.frombytes('RGB', config.tracksize, data)
-            self.matrix.draw(img)
+            #surface = pygame.display.get_surface()
+            #data = pygame.image.tostring(surface,'RGB')
+            #img = Image.frombytes('RGB', config.tracksize, data)
+            #self.matrix.draw(img)
             pygame.display.update()
             pygame.display.flip()
 
@@ -579,7 +595,7 @@ def start():
     joystick = pygame.joystick.Joystick(i)
     joystick.init()
 
-  app.matrix = MatrixScreen()
+  #app.matrix = MatrixScreen()
   pygame.mouse.set_visible(False)
   app.title = pygame.image.load(os.path.join(config.imagePath, 'splash.png')).convert_alpha()
   app.results2 = pygame.image.load(os.path.join(config.imagePath, 'results2.png')).convert_alpha()

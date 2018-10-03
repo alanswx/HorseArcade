@@ -14,6 +14,7 @@ tracksize = (_screenwidth, _screenheight)
 
 horsesize = (32, 20)
 horseNames = ['Sea Biscuit','Sweeny','Secretariat','Sympatico']
+horseLeds = [ (25,24),(23,22),(21,20),(19,18)]
 
 finishlinex = 10
 minpeople = 2
