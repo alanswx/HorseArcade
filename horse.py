@@ -72,8 +72,6 @@ class Horse:
 
     def draw(self, screen, dt):
       if self.hidden:
-          print("blink leds")
-          self.blinkingLEDs.update(dt)
           return
 
       if self.done or self.startTime is None:
@@ -84,6 +82,10 @@ class Horse:
           if self.x <= config.finishlinex:
             self.done = True
             self.endTime = time.time()
+
+    def updateLEDs(self,dt):
+        if self.hidden:
+            self.blinkingLEDs.update(dt)
 
     def setLEDs(self):
         print('setLEDs')
@@ -260,6 +262,8 @@ class Start(States):
             self.time = self.time - dt
         if self.time < 0 and self.timerStarted == True:
             self.done = True
+        for horse in self.app._horses:
+            horse.updateLEDs(dt)
 
     def draw(self, screen, dt):
         self.app.grass.draw(screen, [0,0])
@@ -351,6 +355,8 @@ class Game(States):
         if self.timerStarted == True:
             self.time = self.time - dt
         horses = self.app.horses()
+
+
 
         if not self.timerStarted:
           for horse in horses:
@@ -543,8 +549,7 @@ class Control:
         self.state.previous = previous
 
     def horses(self):
-      #horses = [horse for horse in self._horses if not horse.hidden]
-      horses = self._horses
+      horses = [horse for horse in self._horses if not horse.hidden]
       return horses
 
     def getHorse(self, horseid):
