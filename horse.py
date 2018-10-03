@@ -5,6 +5,7 @@ import os, sys, string, time, logging, argparse
 import pygame
 from PIL import Image
 import AnimatedSprite
+import BlinkingLED
 
 try:
   import RPi.GPIO as GPIO
@@ -43,6 +44,7 @@ class Horse:
 
         horsePath = os.path.join(config.imagePath, 'horse_%d' % (slotnumber+1))
         self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(horsePath, 'frame'), 12)
+        self.blinkingLEDs = BlinkingLED.BlinkingLED(GPIO,self.leds[0],self.leds[1],animation_time=0.2)
         self.still = pygame.image.load(os.path.join(horsePath, 'still.png'))
         self.character = pygame.image.load(os.path.join(horsePath, 'face.png')).convert_alpha()
         self.reset()
@@ -69,7 +71,9 @@ class Horse:
         self.endTime = time.time()
 
     def draw(self, screen, dt):
-      if self.hidden: return
+      if self.hidden:
+          self.blinkingLEDs.update(dt)
+          return
 
       if self.done or self.startTime is None:
         screen.blit(self.still, [self.x,self.y])
@@ -82,17 +86,17 @@ class Horse:
 
     def setLEDs(self):
         print('setLEDs')
-        if self.x > config.finishlinex:
+        if self.x < config.finishlinex:
              GPIO.output(self.leds[0],0)
              GPIO.output(self.leds[1],0)
              print('setLEDs: self.x < config.finishlinex',self.x,config.finishlinex)
         else:
           if (self.feet==0):
-             GPIO.output(self.leds[1],0)
-             GPIO.output(self.leds[0],1)
-          else:
              GPIO.output(self.leds[0],0)
              GPIO.output(self.leds[1],1)
+          else:
+             GPIO.output(self.leds[1],0)
+             GPIO.output(self.leds[0],1)
 
     def button(self, paw):
         if self.hidden:
