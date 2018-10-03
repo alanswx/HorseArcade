@@ -72,6 +72,7 @@ class Horse:
 
     def draw(self, screen, dt):
       if self.hidden:
+          print("blink leds")
           self.blinkingLEDs.update(dt)
           return
 
@@ -542,7 +543,8 @@ class Control:
         self.state.previous = previous
 
     def horses(self):
-      horses = [horse for horse in self._horses if not horse.hidden]
+      #horses = [horse for horse in self._horses if not horse.hidden]
+      horses = self._horses
       return horses
 
     def getHorse(self, horseid):

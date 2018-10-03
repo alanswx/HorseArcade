@@ -34,6 +34,6 @@ class BlinkingLED():
                off=1
             else:
                off=0
-            GPIO.output(self.leds[on],1)
-            GPIO.output(self.leds[off],0)
+            self.GPIO.output(self.leds[on],1)
+            self.GPIO.output(self.leds[off],0)
             self.index=self.index+1
