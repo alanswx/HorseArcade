@@ -529,6 +529,13 @@ class Control:
         self.done = False
         #self.screen = pygame.display.set_mode(self.size,pygame.FULLSCREEN)
         self.screen = pygame.display.set_mode(config.screensize, pygame.FULLSCREEN|pygame.DOUBLEBUF)
+        try:
+            GPIO.setsurface(self.screen)
+            # Method exists, and was used.
+        except AttributeError:
+            # Method does not exist.  What now?
+            print('traditional GPIO')
+
         self.clock = pygame.time.Clock()
         self._horses = []
 
