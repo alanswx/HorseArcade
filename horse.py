@@ -101,6 +101,10 @@ class Horse:
              GPIO.output(self.leds[1],0)
              GPIO.output(self.leds[0],1)
 
+    def change_state(self):
+        GPIO.output(self.leds[0],0)
+        GPIO.output(self.leds[1],0)
+
     def button(self, paw):
         if self.hidden:
             return
@@ -156,7 +160,7 @@ class Grass2:
     greens.append((38, 221, 42))  ## last
     hgreens.append((7, 195, 6))
 
-    screen.set_clip((0,0,config.tracksize[0], config.tracksize[1]))
+    #screen.set_clip((0,0,config.tracksize[0], config.tracksize[1]))
 
 
     screen.blit(self.uppertrack, [x, y])
@@ -235,9 +239,13 @@ class Start(States):
             logging.debug("Joystick button released.")
             logging.debug(event)
             if event.button==0: self.app.addHorse(0)
+            elif event.button==1: self.app.addHorse(0)
             elif event.button==2: self.app.addHorse(1)
+            elif event.button==3: self.app.addHorse(1)
             elif event.button==4: self.app.addHorse(2)
+            elif event.button==5: self.app.addHorse(2)
             elif event.button==6: self.app.addHorse(3)
+            elif event.button==7: self.app.addHorse(3)
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE: self.quit = True
             elif event.key == pygame.K_3: self.app.addHorse(0)
@@ -248,10 +256,6 @@ class Start(States):
             elif event.key == pygame.K_h: self.app.addHorse(5)
 
         if self.app.numPeople() >= config.minpeople:
-          if self.timerStarted==False:
-            pygame.mixer.music.load(os.path.join(config.soundPath, 'racestart.ogg'))
-            pygame.mixer.music.set_endevent(SONG_END)
-            pygame.mixer.music.play(0)
           self.timerStarted = True
         if self.app.numPeople() == len(config.horseNames):
             self.done = True
@@ -266,9 +270,24 @@ class Start(States):
             horse.updateLEDs(dt)
 
     def draw(self, screen, dt):
-        self.app.grass.draw(screen, [0,0])
-        for horse in self.app.horses():
-          horse.draw(screen, dt)
+        screen.blit(self.app.results2, [0,0])
+        for horse in self.app._horses:
+          readytext = self.app.ribbon[0]
+          ready_rect = readytext.get_rect()
+          ready_rect.x = ((horse.slotnumber) * 128)+64-ready_rect.width/2
+          ready_rect.y = 58
+          myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 25)
+          if horse.hidden:
+              textsurface = myfont.render('Press Any', True, (0,0,0))
+              screen.blit(textsurface, (ready_rect.x-32, ready_rect.y+16))
+              textsurface = myfont.render('Button', True, (0,0,0))
+              screen.blit(textsurface, (ready_rect.x-16, ready_rect.y+32))
+              if self.timerStarted == True:
+                  textsurface = myfont.render(str(round(self.time)), True, (0,0,0))
+                  screen.blit(textsurface, (ready_rect.x+12, ready_rect.y+48))
+          else:
+              textsurface = myfont.render('Ready!', True, (0,0,0))
+              screen.blit(textsurface, (ready_rect.x-8, ready_rect.y+16))
 class CountDown(States):
     def __init__(self, app):
         self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdown'), 6, 5,offset=-1,animation_time=1)
@@ -283,7 +302,8 @@ class CountDown(States):
         pygame.mixer.music.load(os.path.join(config.soundPath, 'racestart.ogg'))
         pygame.mixer.music.set_endevent(SONG_END)
         pygame.mixer.music.play(0)
-
+        for horse in self.app.horses():
+            horse.setLEDs()
     def get_event(self, event):
 
         if event.type == pygame.KEYDOWN:
@@ -319,6 +339,7 @@ class Game(States):
         self.time = 5
         for horse in self.app.horses():
             horse.reset_time()
+            horse.setLEDs()
         logging.debug('starting Game state')
 
     def get_event(self, event):
@@ -355,8 +376,6 @@ class Game(States):
         if self.timerStarted == True:
             self.time = self.time - dt
         horses = self.app.horses()
-
-
 
         if not self.timerStarted:
           for horse in horses:
@@ -549,6 +568,8 @@ class Control:
         self.state.startup()
 
     def flip_state(self):
+        for horse in self._horses:
+            horse.change_state()
         self.state.done = False
         previous,self.state_name = self.state_name, self.state.next
         self.state = self.state_dict[self.state_name]

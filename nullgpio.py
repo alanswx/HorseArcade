@@ -11,7 +11,7 @@ def setmode(a):
 def setup(a, b):
    print ('GPIO.setup:',a)
 def output(a, b):
-   print ('GPIO.output:',a)
+   print ('GPIO.output:',a,b)
    p = (a*20,200)
    if (gpiosurface!=None):
        pygame.draw.circle(gpiosurface, (249,8,28), p,10)
