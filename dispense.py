@@ -34,9 +34,9 @@ def dispense_init():
     print("Initializing servo")
 def dispense_back(channel):
     # Move servo on channel O between extremes.
-    pwm.set_pwm(channel, 0, config.servo_min)
+    pwm.set_pwm(channel, 0, config.servo_max)
     print("Dispenser " + str(channel+1)+": Pulling Back")
 def dispense_forward(channel):
-    pwm.set_pwm(channel, 0, config.servo_max)
+    pwm.set_pwm(channel, 0, config.servo_min)
     time.sleep(1)
     print("Dispenser " + str(channel+1)+": Dispensing Candy")

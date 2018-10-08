@@ -472,15 +472,17 @@ class Finish(States):
           else:
               textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (0,0,0))
               screen.blit(textsurface, (ribbon_rect.x, ribbon_rect.y+56))
-          if not self.dispensed_candy:
+        if not self.dispensed_candy:
               winner = self.sortedList[0].slotnumber
               #print("The winner is " + str(winner+1))
               for horse in self.app.horses():
                 dispense.dispense_back(horse.slotnumber)
-              time.sleep(1)
+              time.sleep(2)
               for horse in self.app.horses():
                 dispense.dispense_forward(horse.slotnumber)
+              time.sleep(2)
               dispense.dispense_back(winner)
+              time.sleep(2)
               dispense.dispense_forward(winner)
               self.showTimer = time.time()
               self.dispensed_candy = True

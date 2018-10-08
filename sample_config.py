@@ -19,5 +19,5 @@ horseLeds = [ (25,24),(23,22),(21,20),(19,18)]
 finishlinex = 10
 minpeople = 2
 
-servo_min = 150  # Min pulse length out of 4096
-servo_max = 570  # Max pulse length out of 4096
+servo_min = 100  # Min pulse length out of 4096
+servo_max = 630  # Max pulse length out of 4096
