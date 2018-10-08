@@ -29,7 +29,10 @@ def dispense_init():
     pwm.set_pwm_freq(60)
     servo_min = config.servo_min
     servo_max = config.servo_max
-    pwm.set_pwm(channel, 0, servo_min)
+    pwm.set_pwm(0, 0, servo_max)
+    pwm.set_pwm(1, 0, servo_max)
+    pwm.set_pwm(2, 0, servo_max)
+    pwm.set_pwm(3, 0, servo_max)
     print("Initializing servo")
 def dispense_back(channel):
     # Move servo on channel O between extremes.
