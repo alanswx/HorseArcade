@@ -24,9 +24,9 @@ import Adafruit_PCA9685
 #pwm = Adafruit_PCA9685.PCA9685(address=0x41, busnum=2)
 
 # Set frequency to 60hz, good for servos.
+pwm = Adafruit_PCA9685.PCA9685()
 def dispense_init():
     pwm.set_pwm_freq(60)
-    pwm = Adafruit_PCA9685.PCA9685()
     servo_min = config.servo_min
     servo_max = config.servo_max
     pwm.set_pwm(channel, 0, servo_min)
@@ -39,31 +39,3 @@ def dispense_forward(channel):
     pwm.set_pwm(channel, 0, servo_max)
     time.sleep(1)
     print("Dispenser " + str(channel+1)+": Dispensing Candy")
-"""print('Moving servo on channel 0, press Ctrl-C to quit...')
-while True:
-    # Move servo on channel O between extremes.
-    while 1:
-        pwm.set_pwm(0, 0, servo_min)
-        d = raw_input("Ready for %d:" % servo_min)
-        d = d.strip()
-        try:
-            d = int(d)
-            if d:
-                servo_min = d
-        except ValueError:
-            pass
-        print (repr(d))
-        if d == "": break
-
-    while 1:
-        pwm.set_pwm(0, 0, servo_max)
-        d = raw_input("Ready for %d:" % servo_max)
-        d = d.strip()
-        try:
-            d = int(d)
-            if d:
-                servo_max = d
-        except ValueError:
-            pass
-
-        if d == "": break """
