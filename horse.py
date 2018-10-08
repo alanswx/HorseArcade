@@ -92,11 +92,11 @@ class Horse:
             self.blinkingLEDs.update(dt)
 
     def setLEDs(self):
-        print('setLEDs')
+        #print('setLEDs')
         if self.x < config.finishlinex:
              GPIO.output(self.leds[0],0)
              GPIO.output(self.leds[1],0)
-             print('setLEDs: self.x < config.finishlinex',self.x,config.finishlinex)
+             #print('setLEDs: self.x < config.finishlinex',self.x,config.finishlinex)
         else:
           if (self.feet==0):
              GPIO.output(self.leds[0],0)
@@ -474,9 +474,10 @@ class Finish(States):
               screen.blit(textsurface, (ribbon_rect.x, ribbon_rect.y+56))
           if not self.dispensed_candy:
               winner = self.sortedList[0].slotnumber
-              print("The winner is " + str(winner+1))
+              #print("The winner is " + str(winner+1))
               for horse in self.app.horses():
                 dispense.dispense_back(horse.slotnumber)
+              time.sleep(1)
               for horse in self.app.horses():
                 dispense.dispense_forward(horse.slotnumber)
               dispense.dispense_back(winner)
@@ -489,7 +490,8 @@ class Control:
         self.__dict__.update(settings)
         self.done = False
         #self.screen = pygame.display.set_mode(self.size,pygame.FULLSCREEN)
-        self.screen = pygame.display.set_mode(config.screensize, pygame.FULLSCREEN|pygame.DOUBLEBUF)
+        #self.screen = pygame.display.set_mode(config.screensize, pygame.FULLSCREEN|pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode()
         try:
             GPIO.setsurface(self.screen)
             # Method exists, and was used.
