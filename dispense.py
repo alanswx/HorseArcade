@@ -4,6 +4,10 @@
 # License: Public Domain
 from __future__ import division
 import time
+try:
+  import config
+except ImportError:
+    print ("no config.py found.  Please copy sample_config.py to config.py.")
 
 # Import the PCA9685 module.
 import Adafruit_PCA9685
@@ -14,30 +18,28 @@ import Adafruit_PCA9685
 #logging.basicConfig(level=logging.DEBUG)
 
 # Initialise the PCA9685 using the default address (0x40).
-pwm = Adafruit_PCA9685.PCA9685()
+
 
 # Alternatively specify a different address and/or bus:
 #pwm = Adafruit_PCA9685.PCA9685(address=0x41, busnum=2)
 
-# Configure min and max servo pulse lengths
-servo_min = 150  # Min pulse length out of 4096
-servo_max = 570  # Max pulse length out of 4096
-
-# Helper function to make setting a servo pulse width simpler.
-def set_servo_pulse(channel, pulse):
-    pulse_length = 1000000    # 1,000,000 us per second
-    pulse_length //= 60       # 60 Hz
-    print('{0}us per period'.format(pulse_length))
-    pulse_length //= 4096     # 12 bits of resolution
-    print('{0}us per bit'.format(pulse_length))
-    pulse *= 1000
-    pulse //= pulse_length
-    pwm.set_pwm(channel, 0, pulse)
-
 # Set frequency to 60hz, good for servos.
-pwm.set_pwm_freq(60)
-
-print('Moving servo on channel 0, press Ctrl-C to quit...')
+def dispense_init():
+    pwm.set_pwm_freq(60)
+    pwm = Adafruit_PCA9685.PCA9685()
+    servo_min = config.servo_min
+    servo_max = config.servo_max
+    pwm.set_pwm(channel, 0, servo_min)
+    print("Initializing servo")
+def dispense_back(channel):
+    # Move servo on channel O between extremes.
+    pwm.set_pwm(channel, 0, servo_min)
+    print("Dispenser " + str(channel+1)+": Pulling Back")
+def dispense_forward(channel):
+    pwm.set_pwm(channel, 0, servo_max)
+    time.sleep(1)
+    print("Dispenser " + str(channel+1)+": Dispensing Candy")
+"""print('Moving servo on channel 0, press Ctrl-C to quit...')
 while True:
     # Move servo on channel O between extremes.
     while 1:
@@ -64,5 +66,4 @@ while True:
         except ValueError:
             pass
 
-        if d == "": break
-
+        if d == "": break """

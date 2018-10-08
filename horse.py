@@ -6,6 +6,10 @@ import pygame
 from PIL import Image
 import AnimatedSprite
 import BlinkingLED
+try:
+    import dispense
+except:
+  import dispensenull as dispense
 
 try:
   import RPi.GPIO as GPIO
@@ -41,7 +45,7 @@ class Horse:
         self.name = name
         self.slotnumber = slotnumber
         self.leds = leds
-
+        dispense.dispense_init()
         horsePath = os.path.join(config.imagePath, 'horse_%d' % (slotnumber+1))
         self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(horsePath, 'frame'), 12)
         self.blinkingLEDs = BlinkingLED.BlinkingLED(GPIO,self.leds[0],self.leds[1],animation_time=0.2)
@@ -120,6 +124,7 @@ class Horse:
         elif self.x < config.finishlinex:
             self.timerStarted = False
         self.setLEDs()
+
 class Grass:
   def __init__(self):
     self.grass = pygame.image.load(os.path.join(config.imagePath, 'background_3.png'))
@@ -203,7 +208,6 @@ class Splash(States):
         logging.debug('starting Splash state')
         self.timerStarted = True
         self.time = 3
-
     def get_event(self, event):
         if event.type == pygame.JOYBUTTONUP:
           logging.debug("Joystick button released.")
@@ -414,12 +418,11 @@ class Finish(States):
         logging.debug('starting Finish state')
         pygame.mixer.music.load(os.path.join(config.soundPath, 'finish.ogg'))
         pygame.mixer.music.play(0)
-
-        self.showTimer = time.time()
-
+        self.sortedList = sorted(self.app.horses(), key=lambda horse: (not horse.done, horse.endTime-horse.startTime, horse.x))
         for horse in self.app.horses():
           dt = horse.endTime - horse.startTime
           logging.info("%d: %.3f" % ((horse.slotnumber+1), dt))
+        self.dispensed_candy = False
 ##           if dt == 0:
 ##             horse.endTime = None
 
@@ -446,11 +449,9 @@ class Finish(States):
         pygame.display.flip()
 
     def draw(self, screen):
-        sortedList = sorted(self.app.horses(), key=lambda horse: (not horse.done, horse.endTime-horse.startTime, horse.x))
-
         screen.blit(self.app.results2, [0,0])
 
-        for place, horse in enumerate(sortedList):
+        for place, horse in enumerate(self.sortedList):
 
           #logging.debug((col,row))
           #logging.debug(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime))+' '+str(horse.x))
@@ -471,76 +472,17 @@ class Finish(States):
           else:
               textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (0,0,0))
               screen.blit(textsurface, (ribbon_rect.x, ribbon_rect.y+56))
-class Finish2(States):
-    def __init__(self, app):
-        self.app = app
-        States.__init__(self)
-        self.next = 'splash'
-
-        self.showTimer = None
-
-    def startup(self):
-        logging.debug('starting Finish2 state')
-        pygame.mixer.music.load(os.path.join(config.soundPath, 'finish.ogg'))
-        pygame.mixer.music.play(0)
-
-        self.showTimer = time.time()
-
-        for horse in self.app.horses():
-          dt = horse.endTime - horse.startTime
-          logging.info("%d: %.3f" % ((horse.slotnumber+1), dt))
-##           if dt == 0:
-##             horse.endTime = None
-
-    def get_event(self, event):
-        if event.type == pygame.JOYBUTTONUP:
-          logging.debug("Joystick button released.")
-          logging.debug(event)
-          if event.button in (0,2,4,6):
-            self.markDone()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-          self.markDone()
-        elif event.type == pygame.KEYDOWN:
-          if event.key in (pygame.K_1, pygame.K_q, pygame.K_a, pygame.K_z):
-            self.markDone()
-          elif event.key == pygame.K_ESCAPE: self.quit = True
-
-    def markDone(self):
-      dt = time.time() - self.showTimer
-      if dt > 5:
-        self.done = True
-
-    def update(self, screen, dt):
-        self.draw(screen)
-        pygame.display.flip()
-
-    def draw(self, screen):
-        sortedList = sorted(self.app.horses(), key=lambda horse: (not horse.done, horse.endTime-horse.startTime, horse.x))
-
-        screen.blit(self.app.results, [0,0])
-
-        for place, horse in enumerate(sortedList):
-          row = place % 2
-          col = place // 2
-
-          #logging.debug((col,row))
-          #logging.debug(str(horse.slotnumber+1)+': '+str((horse.endTime-horse.startTime))+' '+str(horse.x))
-          horsecharacter = horse.character
-          horsecharacter_rect = horsecharacter.get_rect()
-          horsecharacter_rect.x = ((col) * 256) + 40
-          horsecharacter_rect.y = ((row) * 32) + 56
-
-          screen.blit(horsecharacter, horsecharacter_rect)
-
-          myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 20)
-          textsurface = myfont.render(str(horse.name), True, (255,255,255))
-          screen.blit(textsurface, (horsecharacter_rect.x + 48, horsecharacter_rect.y+8))
-          if not horse.done:
-              textsurface = myfont.render('DNF', True, (255,255,255))
-              screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
-          else:
-              textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (255,255,255))
-              screen.blit(textsurface, (horsecharacter_rect.x + 160, horsecharacter_rect.y+8))
+          if not self.dispensed_candy:
+              winner = self.sortedList[0].slotnumber
+              print("The winner is " + str(winner+1))
+              for horse in self.app.horses():
+                dispense.dispense_back(horse.slotnumber)
+              for horse in self.app.horses():
+                dispense.dispense_forward(horse.slotnumber)
+              dispense.dispense_back(winner)
+              dispense.dispense_forward(winner)
+              self.showTimer = time.time()
+              self.dispensed_candy = True
 
 class Control:
     def __init__(self, **settings):
@@ -557,7 +499,6 @@ class Control:
 
         self.clock = pygame.time.Clock()
         self._horses = []
-
         for horsenum, name in enumerate(config.horseNames):
           self._horses.append(Horse(horsenum, name,config.horseLeds[horsenum]))
 
