@@ -437,7 +437,8 @@ class Finish(States):
           if event.key in (pygame.K_1, pygame.K_q, pygame.K_a, pygame.K_z):
             self.markDone()
           elif event.key == pygame.K_ESCAPE: self.quit = True
-
+    def markDone(self):
+      dt = time.time() - self.showTimer
     def update(self, screen, dt):
         self.draw(screen)
         pygame.display.flip()
@@ -493,7 +494,10 @@ class Candy(States):
           if event.key in (pygame.K_1, pygame.K_q, pygame.K_a, pygame.K_z):
             self.markDone()
           elif event.key == pygame.K_ESCAPE: self.quit = True
-
+    def markDone(self):
+      dt = time.time() - self.showTimer
+      if dt > 5:
+        self.done = True
     def update(self, screen, dt):
         self.draw(screen)
         pygame.display.flip()
