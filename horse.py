@@ -438,7 +438,7 @@ class Finish(States):
             self.markDone()
           elif event.key == pygame.K_ESCAPE: self.quit = True
     def markDone(self):
-      dt = time.time() - self.showTimer
+      #dt = time.time() - self.showTimer
     def update(self, screen, dt):
         self.draw(screen)
         pygame.display.flip()
