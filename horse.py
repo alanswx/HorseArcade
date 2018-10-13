@@ -217,12 +217,13 @@ class Splash(States):
 
 
     def update(self, screen, dt):
+        if dt > 1:
+            dt = 0
         self.draw(screen, dt)
         if self.timerStarted == True:
             self.time = self.time - dt
         if self.time < 0 and self.timerStarted == True:
             self.done = True
-
     def draw(self, screen, dt):
             screen.blit(self.app.title, [0,0])
 
