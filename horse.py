@@ -410,8 +410,7 @@ class Finish(States):
     def __init__(self, app):
         self.app = app
         States.__init__(self)
-        self.next = 'splash'
-
+        self.next = 'candy'
         self.showTimer = None
 
     def startup(self):
@@ -439,15 +438,9 @@ class Finish(States):
             self.markDone()
           elif event.key == pygame.K_ESCAPE: self.quit = True
 
-    def markDone(self):
-      dt = time.time() - self.showTimer
-      if dt > 5:
-        self.done = True
-
     def update(self, screen, dt):
         self.draw(screen)
         pygame.display.flip()
-
     def draw(self, screen):
         screen.blit(self.app.results2, [0,0])
 
@@ -472,6 +465,39 @@ class Finish(States):
           else:
               textsurface = myfont.render(str(round((horse.endTime-horse.startTime),2)), True, (0,0,0))
               screen.blit(textsurface, (ribbon_rect.x, ribbon_rect.y+56))
+        self.done = True
+
+class Candy(States):
+    def __init__(self, app):
+        self.app = app
+        States.__init__(self)
+        self.next = 'splash'
+        self.showTimer = None
+
+    def startup(self):
+        self.sortedList = sorted(self.app.horses(), key=lambda horse: (not horse.done, horse.endTime-horse.startTime, horse.x))
+        logging.debug('starting Candy state')
+        self.dispensed_candy = False
+##           if dt == 0:
+##             horse.endTime = None
+
+    def get_event(self, event):
+        if event.type == pygame.JOYBUTTONUP:
+          logging.debug("Joystick button released.")
+          logging.debug(event)
+          if event.button in (0,2,4,6):
+            self.markDone()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+          self.markDone()
+        elif event.type == pygame.KEYDOWN:
+          if event.key in (pygame.K_1, pygame.K_q, pygame.K_a, pygame.K_z):
+            self.markDone()
+          elif event.key == pygame.K_ESCAPE: self.quit = True
+
+    def update(self, screen, dt):
+        self.draw(screen)
+        pygame.display.flip()
+    def draw(self, screen):
         if not self.dispensed_candy:
               winner = self.sortedList[0].slotnumber
               #print("The winner is " + str(winner+1))
@@ -486,7 +512,7 @@ class Finish(States):
               dispense.dispense_forward(winner)
               self.showTimer = time.time()
               self.dispensed_candy = True
-
+        self.done = True
 class Control:
     def __init__(self, **settings):
         self.__dict__.update(settings)
@@ -580,7 +606,8 @@ def start():
       'start': Start(app),
       'countdown': CountDown(app),
       'game': Game(app),
-      'finish':Finish(app)
+      'finish':Finish(app),
+      'candy':Candy(app)
   }
 
   pygame.init()
