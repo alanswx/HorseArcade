@@ -295,12 +295,12 @@ class Start(States):
               screen.blit(textsurface, (ready_rect.x-8, ready_rect.y+16))
 class CountDown(States):
     def __init__(self, app):
-        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdown'), 6, 5,offset=-1,animation_time=1)
         self.app = app
         States.__init__(self)
         self.next = 'game'
 
     def startup(self):
+        self.sprite=AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdown'), 6, 5,offset=-1,animation_time=1)
         self.timerStarted = True
         self.time = 6
         logging.debug('starting Countdown state')
@@ -332,14 +332,14 @@ class CountDown(States):
 
 class Game(States):
     def __init__(self, app):
-        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdownend'), 5, 4,
-                                                    pygame.image.load(os.path.join(config.imagePath, 'endgame.png')).convert_alpha(),
-                                                    offset=-1,animation_time=1)
         self.app = app
         States.__init__(self)
         self.next = 'finish'
 
     def startup(self):
+        self.sprite = AnimatedSprite.AnimatedSprite(os.path.join(config.imagePath, 'countdownend'), 5, 4,
+                                                    pygame.image.load(os.path.join(config.imagePath, 'endgame.png')).convert_alpha(),
+                                                    offset=-1,animation_time=1)
         self.timerStarted = False
         self.time = 5
         for horse in self.app.horses():
