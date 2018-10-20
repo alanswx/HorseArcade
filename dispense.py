@@ -39,3 +39,16 @@ def dispense_back(channel):
 def dispense_forward(channel):
     pwm.set_pwm(channel, 0, config.servo_min)
     print("Dispenser " + str(channel+1)+": Dispensing Candy")
+
+if __name__ == "__main__":
+    for i in range(42):
+        dispense_back(0)
+        dispense_back(1)
+        dispense_back(2)
+        dispense_back(3)
+        time.sleep(2)
+        dispense_forward(0)
+        dispense_forward(1)
+        dispense_forward(2)
+        dispense_forward(3)
+        time.sleep(2)
