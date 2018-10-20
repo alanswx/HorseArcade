@@ -77,7 +77,6 @@ class Horse:
     def draw(self, screen, dt):
       if self.hidden:
           return
-
       if self.done or self.startTime is None:
         screen.blit(self.still, [self.x,self.y])
       else:
@@ -415,8 +414,12 @@ class Game(States):
         self.app.grass.draw(screen, [0,0])
 
         horses = self.app.horses()
-        for horse in horses: horse.draw(screen, dt)
-
+        for horse in horses:
+            horse.draw(screen, dt)
+            if not horse.hidden:
+             myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 24)
+             textsurface = myfont.render(str(horse.slotnumber+1), True, (0,0,0))
+             screen.blit(textsurface, (config.finishlinex, horse.y+32))
         if self.timerStarted == True:
           self.sprite.update(dt, screen,
                              x=(config.tracksize[0] - self.sprite.image.get_rect()[2])/2,
