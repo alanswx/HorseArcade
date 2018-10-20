@@ -330,6 +330,8 @@ class CountDown(States):
             elif event.key == pygame.K_h: self.app.addHorse(5)
     def update(self, screen, dt):
         self.draw(screen, dt)
+        for horse in self.app._horses:
+            horse.updateLEDs(dt)
         if self.timerStarted == True:
             self.time = self.time - dt
         if self.time < 0 and self.timerStarted == True:
