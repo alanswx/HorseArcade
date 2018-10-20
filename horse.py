@@ -310,10 +310,25 @@ class CountDown(States):
         for horse in self.app.horses():
             horse.setLEDs()
     def get_event(self, event):
-
-        if event.type == pygame.KEYDOWN:
+        if event.type == pygame.JOYBUTTONUP:
+            logging.debug("Joystick button released.")
+            logging.debug(event)
+            if event.button==0: self.app.addHorse(0)
+            elif event.button==1: self.app.addHorse(0)
+            elif event.button==2: self.app.addHorse(1)
+            elif event.button==3: self.app.addHorse(1)
+            elif event.button==4: self.app.addHorse(2)
+            elif event.button==5: self.app.addHorse(2)
+            elif event.button==6: self.app.addHorse(3)
+            elif event.button==7: self.app.addHorse(3)
+        elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE: self.quit = True
-
+            elif event.key == pygame.K_3: self.app.addHorse(0)
+            elif event.key == pygame.K_e: self.app.addHorse(1)
+            elif event.key == pygame.K_d: self.app.addHorse(2)
+            elif event.key == pygame.K_c: self.app.addHorse(3)
+            elif event.key == pygame.K_y: self.app.addHorse(4)
+            elif event.key == pygame.K_h: self.app.addHorse(5)
     def update(self, screen, dt):
         self.draw(screen, dt)
         if self.timerStarted == True:
