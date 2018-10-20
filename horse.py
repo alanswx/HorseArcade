@@ -443,9 +443,24 @@ class Finish(States):
         pygame.mixer.music.load(os.path.join(config.soundPath, 'finish.ogg'))
         pygame.mixer.music.play(0)
         self.sortedList = sorted(self.app.horses(), key=lambda horse: (not horse.done, horse.endTime-horse.startTime, horse.x))
+        #file = open(“testfile.txt”,”w+”)
+        #file.write(self.sortedList)
+        #file.close()
+        result_str=""
+        for horse in self.app._horses:
+            if (horse.hidden):
+               result_str=result_str+"DNR,"
+            else:
+               result_str=result_str+"{0:.2f},".format(horse.endTime - horse.startTime)
+        print("LOGLINE:",result_str)
+        file = open("logfile.csv","a")
+        file.write(result_str+"\n")
+        file.close()
+
         for horse in self.app.horses():
           dt = horse.endTime - horse.startTime
           logging.info("%d: %.3f" % ((horse.slotnumber+1), dt))
+          print("%d: %.3f" % ((horse.slotnumber+1), dt))
         self.dispensed_candy = False
 ##           if dt == 0:
 ##             horse.endTime = None
