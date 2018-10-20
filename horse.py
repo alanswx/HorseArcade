@@ -344,9 +344,9 @@ class CountDown(States):
         for horse in self.app.horses():
           horse.draw(screen, dt)
           if not horse.hidden:
-          myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 24)
-          textsurface = myfont.render(str(horse.slotnumber+1), True, (0,0,0))
-          screen.blit(textsurface, (config.finishlinex, horse.y+32))
+           myfont = pygame.font.SysFont(os.path.join(config.fontPath, 'Bebas Neue.ttf'), 24)
+           textsurface = myfont.render(str(horse.slotnumber+1), True, (0,0,0))
+           screen.blit(textsurface, (config.finishlinex, horse.y+32))
 
 class Game(States):
     def __init__(self, app):
