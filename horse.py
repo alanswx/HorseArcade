@@ -4,6 +4,7 @@ import os, sys, string, time, logging, argparse
 
 import pygame
 from PIL import Image
+
 import AnimatedSprite
 import BlinkingLED
 try:
@@ -16,27 +17,15 @@ try:
 except:
   import nullgpio as GPIO
 
-
-
 try:
   import config
 except ImportError:
   print ("no config.py found.  Please copy sample_config.py to config.py.")
   sys.exit(1)
 
-#
-# Setup GPIO pins for LEDs
-#
-GPIO.setmode(GPIO.BCM)
-for io in config.horseLeds:
-  GPIO.setup(io,GPIO.OUT)
-
-
-
 x = 0
 y = 0
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
-
 
 SONG_END = pygame.USEREVENT + 1
 
@@ -652,6 +641,15 @@ def start():
       'fps' : 30
   }
 
+
+  #
+  # Setup GPIO pins for LEDs
+  #
+  if 1:
+    GPIO.setmode(GPIO.BCM)
+    for io in config.horseLeds:
+      GPIO.setup(io,GPIO.OUT)
+
   app = HorseApp(**settings)
   state_dict = {
       'splash': Splash(app),
@@ -708,6 +706,7 @@ def parse_args(argv):
   #parser.add_argument("files", type=str, nargs='+')
 
   args = parser.parse_args(argv[1:])
+  if args.log_level is None: args.log_level = "INFO"
 
   return parser, args
 
@@ -716,8 +715,12 @@ def main(argv, stdout, environ):
 
   parser, args = parse_args(argv)
 
+  numeric_loglevel = getattr(logging, args.log_level.upper(), None)
+  if not isinstance(numeric_loglevel, int):
+    raise ValueError('Invalid log level: %s' % args.log_level)
+
   logging.basicConfig(format="[%(asctime)s] %(levelname)-8s %(message)s",
-                    datefmt="%m/%d %H:%M:%S", level=args.log_level)
+                       datefmt="%m/%d %H:%M:%S", level=numeric_loglevel)
 
   if args.test_flag:  test();   return
 
