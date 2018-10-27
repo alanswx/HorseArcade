@@ -14,6 +14,10 @@ tracksize = (_screenwidth, _screenheight)
 
 horsesize = (32, 20)
 horseNames = ['Sea Biscuit','Sweeny','Secretariat','Sympatico']
+horseLeds = [ (25,24),(23,22),(21,20),(19,18)]
 
-finishlinex = 40
+finishlinex = 10
 minpeople = 2
+
+servo_min = 100  # Min pulse length out of 4096
+servo_max = 630  # Max pulse length out of 4096
